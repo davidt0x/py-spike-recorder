@@ -8,7 +8,6 @@
 [![Conda-Forge][conda-badge]][conda-link]
 [![PyPI platforms][pypi-platforms]][pypi-link]
 
-[![GitHub Discussion][github-discussions-badge]][github-discussions-link]
 [![Gitter][gitter-badge]][gitter-link]
 
 
@@ -20,8 +19,6 @@
 [black-link]:               https://github.com/psf/black
 [conda-badge]:              https://img.shields.io/conda/vn/conda-forge/spike-recorder
 [conda-link]:               https://github.com/conda-forge/spike-recorder-feedstock
-[github-discussions-badge]: https://img.shields.io/static/v1?label=Discussions&message=Ask&color=blue&logo=github
-[github-discussions-link]:  https://github.com/davidt0x/py-spike-recorder/discussions
 [gitter-badge]:             https://badges.gitter.im/https://github.com/davidt0x/py-spike-recorder/community.svg
 [gitter-link]:              https://gitter.im/https://github.com/davidt0x/py-spike-recorder/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
 [pypi-link]:                https://pypi.org/project/spike-recorder/
