@@ -151,35 +151,70 @@ class LibetClock(QWidget):
         self.rubyFont = font
 
     def reset_clock(self):
+        """
+        Reset the clock. This moves the hand to the 12 position and stops the clock.
+
+        Returns:
+            None
+        """
         self._start_time = None
         self._stop_time = None
         self.clock_stopped = True
 
     def start_clock(self):
+        """
+        Start running the clock. This starts movement of the hand.
+
+        Returns:
+            None
+        """
         self.clock_stopped = False
 
     def stop_clock(self):
+        """
+        Stop the clock in its current position.
+
+        Returns:
+            None
+        """
         self.clock_stopped = True
         self._stop_time = QDateTime.currentDateTime().time()
 
+    def msecs_elapsed(self) -> int:
+        """
+        Get the amount of time elapsed since the clock was first started. If the clock has been stopped
+        calculate the time between start and stop time.
+
+        Returns:
+            The elapsed number of milliseconds. Returns 0 when the clock has not been started.
+        """
+        if self._start_time is None:
+            return 0
+        elif self._stop_time is None:
+            return self._start_time.msecsTo(QDateTime.currentDateTime().time())
+        else:
+            return self._start_time.msecsTo(self._stop_time)
+
     def paintEvent(self, event):
+        """
+        Render the clock. Invoked periodicaly by a QTimer setup in the constructor.
+
+        Args:
+            event: The event signal.
+
+        Returns:
+            None
+        """
 
         side = min(self.width(), self.height())
 
         if self._start_time is None and not self.clock_stopped:
             self._start_time = QDateTime.currentDateTime().time()
 
-        # Get the current time and compute the msecs since the clock start time
-        if self.clock_stopped and self._start_time and self._stop_time:
-            msecs_elapsed = self._start_time.msecsTo(self._stop_time)
-        elif self.clock_stopped and self._start_time is None:
-            msecs_elapsed = 0
-        else:
-            msecs_elapsed = self._start_time.msecsTo(QDateTime.currentDateTime().time())
-
         # Compute the hand rotation based on the elapsed milliseconds
-        rotation = math.fmod(self.rotation_per_minute * 360.0 * (msecs_elapsed / 60000.0), 360.0)
+        rotation = math.fmod(self.rotation_per_minute * 360.0 * (self.msecs_elapsed() / 60000.0), 360.0)
 
+        # Start all the drawing.
         handColor = self.handColor
         whiteShadowPen = QPen(self.whiteShadowColor)
         whiteShadowPen.setJoinStyle(Qt.MiterJoin)
@@ -203,7 +238,7 @@ class LibetClock(QWidget):
         painter.setBrush(QBrush(self.smokeBackgroundColor))
         painter.drawEllipse(QPoint(0, 0), 99, 99)
 
-        # Draw the tick marks
+        # Draw the 5 minute tick marks
         painter.setPen(whiteShadowPen)
         painter.setFont(self.rubyFont)
         painter.setBrush(QBrush(handColor))
@@ -212,6 +247,7 @@ class LibetClock(QWidget):
             x, y = self.rotatedPoint(0, -92, angle)
             painter.drawEllipse(x - 3, y - 3, 6, 6)
 
+        # Draw the 1 minute tick marks
         painter.setPen(self.rubyColor)
         painter.setBrush(QBrush(self.minuteColor))
         for j in range(0, 60):
@@ -236,7 +272,6 @@ class LibetClock(QWidget):
         # draw hand
         painter.setPen(darkShadowPen)
         painter.setBrush(QBrush(self.minuteColor))
-
         painter.save()
         painter.rotate(rotation)
         painter.drawConvexPolygon(self.minuteHand)
@@ -244,19 +279,13 @@ class LibetClock(QWidget):
 
         painter.end()
 
-    def keyPressEvent(self, e):
-        if e.key() == Qt.Key_Space:
-            if not self.clock_stopped:
-                self.stop_clock()
-            else:
-                self.reset_clock()
-                self.start_clock()
-
     def mouseMoveEvent(self, event):
 
         side = min(self.width(), self.height())
         scale = (200.0 / side)
 
+        # Unscale the radius of the clock. The painter coordinate system is scaled
+        # and translated in paintEvent
         radius = (1/scale) * 92
 
         # Find the closest point on the clock dial surface from the mouse location
