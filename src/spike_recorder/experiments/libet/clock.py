@@ -100,10 +100,10 @@ class LibetClock(QWidget):
         self.settings.sync()
         super(LibetClock, self).closeEvent(event)
 
-    def __init__(self, parent=None, showFrame=False, windowSize=None, rotation_per_minute = 6.0):
+    def __init__(self, parent=None, showFrame=False, windowSize=None):
         super(LibetClock, self).__init__(parent)
 
-        self.rotation_per_minute = 8.0
+        self.rotation_per_minute = 5.0
 
         self._clock_cursor_pos = None
 
@@ -279,31 +279,43 @@ class LibetClock(QWidget):
 
         painter.end()
 
-    def mouseMoveEvent(self, event):
-
+    def get_mouse_clock_pos(self, x, y):
         side = min(self.width(), self.height())
         scale = (200.0 / side)
 
         # Unscale the radius of the clock. The painter coordinate system is scaled
         # and translated in paintEvent
-        radius = (1/scale) * 92
+        radius = (1 / scale) * 92
 
         # Find the closest point on the clock dial surface from the mouse location
-        p = np.array([event.x(), event.y()])
+        p = np.array([x, y])
         c = np.array([self.width() / 2, self.height() / 2])
         v = p - c
 
         # Get the nearest point on the clock surface
-        self._clock_cursor_pos = (c + radius * (v / np.linalg.norm(v)))
+        clock_cursor_pos = (c + radius * (v / np.linalg.norm(v)))
 
         # We need to scale and transform the clock cursor position because of how the painter
         # coordinate system is setup in paintEvent. Maybe this should be done in paint event
         # I guess.
-        self._clock_cursor_pos = (self._clock_cursor_pos - c) * scale
+        clock_cursor_pos = (clock_cursor_pos - c) * scale
 
         # If the mouse isn't close enough to the surface, don't display it.
-        if np.linalg.norm(self._clock_cursor_pos - (v * scale)) > 8.0:
-            self._clock_cursor_pos = None
+        if np.linalg.norm(clock_cursor_pos - (v * scale)) > 8.0:
+            return None
+        else:
+            return clock_cursor_pos
+
+    def mouseMoveEvent(self, event):
+        self._clock_cursor_pos = self.get_mouse_clock_pos(event.x(), event.y())
+
+    def mousePressEvent(self, event):
+        self._clock_cursor_pos = self.get_mouse_clock_pos(event.x(), event.y())
+
+    def mouseReleaseEvent(self, event):
+        self._clock_cursor_pos = self.get_mouse_clock_pos(event.x(), event.y())
+
+
 
 
 if __name__ == "__main__":
