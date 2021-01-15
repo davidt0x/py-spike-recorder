@@ -1,5 +1,7 @@
 # spike-recorder
 
+[![Join the chat at https://gitter.im/PrincetonUniversity/py-spike-recorder](https://badges.gitter.im/PrincetonUniversity/py-spike-recorder.svg)](https://gitter.im/PrincetonUniversity/py-spike-recorder?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [![Actions Status][actions-badge]][actions-link]
 [![Documentation Status][rtd-badge]][rtd-link]
 [![Code style: black][black-badge]][black-link]
