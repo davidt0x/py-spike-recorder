@@ -1,7 +1,5 @@
 # spike-recorder
 
-[![Join the chat at https://gitter.im/PrincetonUniversity/py-spike-recorder](https://badges.gitter.im/PrincetonUniversity/py-spike-recorder.svg)](https://gitter.im/PrincetonUniversity/py-spike-recorder?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
 [![Actions Status][actions-badge]][actions-link]
 [![Documentation Status][rtd-badge]][rtd-link]
 [![Code style: black][black-badge]][black-link]
@@ -21,8 +19,8 @@
 [black-link]:               https://github.com/psf/black
 [conda-badge]:              https://img.shields.io/conda/vn/conda-forge/spike-recorder
 [conda-link]:               https://github.com/conda-forge/spike-recorder-feedstock
-[gitter-badge]:             https://badges.gitter.im/https://github.com/davidt0x/py-spike-recorder/community.svg
-[gitter-link]:              https://gitter.im/https://github.com/davidt0x/py-spike-recorder/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
+[gitter-badge]:             https://badges.gitter.im/PrincetonUniversity/py-spike-recorder.svg
+[gitter-link]:              https://gitter.im/PrincetonUniversity/py-spike-recorder?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 [pypi-link]:                https://pypi.org/project/spike-recorder/
 [pypi-platforms]:           https://img.shields.io/pypi/pyversions/spike-recorder
 [pypi-version]:             https://badge.fury.io/py/spike-recorder.svg
