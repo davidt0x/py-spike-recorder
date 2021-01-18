@@ -10,6 +10,41 @@
 
 [![Gitter][gitter-badge]][gitter-link]
 
+This package implements a Python interface for the 
+[Backyard Brains Spike Recorder](https://backyardbrains.com/products/spikerecorder), a neural recording application. It
+is based off a [fork](https://github.com/davidt0x/Spike-Recorder) of the original C++ code, found 
+[here](https://github.com/BackyardBrains/Spike-Recorder). In addition, it contains two psychological experiment 
+applications written in Python that control and record events via the SpikeRecorder. 
+
+## Installation
+
+You can install this library from [PyPI](https://pypi.org/project/spike-recorder/) with pip:
+
+```bash
+python -m pip install spike-recorder
+```
+
+## Usage
+
+To run the SpikeRecorder application simply invoke it on the command line
+
+```bash
+spike-recorder
+```
+
+To launch the Iowa Gambling Task Experiment, run:
+
+```bash
+iowa
+```
+
+To launch the Libet Task Experiment, run:
+
+```bash
+libet
+```
+
+
 
 
 
