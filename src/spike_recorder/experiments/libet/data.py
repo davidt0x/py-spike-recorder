@@ -55,5 +55,18 @@ class LibetData:
         """
         return self.trial_idx
 
+    def to_csv(self, filename: str):
+        """
+        Write the experimental data to CSV.
+
+        Args:
+            filename: The name of the CSV file for output.
+
+        Returns:
+            None
+        """
+        df = pd.DataFrame([attr.asdict(d) for d in self.data])
+        df.to_csv(filename, index=False)
+
 
 

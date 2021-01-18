@@ -60,10 +60,10 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
 
 class LibetClock(QWidget):
     minuteHand = QPolygon([
-        QPoint(-2, 0),
-        QPoint(-2, 0),
-        QPoint(-2, -80),
-        QPoint(-2, -80)
+        QPoint(0, 0),
+        QPoint(0, 0),
+        QPoint(0, -80),
+        QPoint(0, -80)
     ])
 
     handColor = QColor(0, 0, 0)
