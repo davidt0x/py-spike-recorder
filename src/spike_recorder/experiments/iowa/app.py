@@ -199,6 +199,16 @@ class IowaMainWindow(QtWidgets.QMainWindow, Ui_main_window):
             win_diag = WinDialog(win_amount=win_amount, loss_amount=loss_amount, delay_seconds=self.DELAY_SECS)
             win_diag.exec_()
 
+        if self.get_num_pulls() >= self.MAX_DECK_PULLS:
+            msg = QtWidgets.QMessageBox()
+            msg.setText("Experiment Complete!")
+            msg.setWindowTitle("Done")
+            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+            msg.exec_()
+
+            self.close()
+
+
     def update_hunch(self):
         """
         Allow the user to record when they get a hunch by pressing a button.
