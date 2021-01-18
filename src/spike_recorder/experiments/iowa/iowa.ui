@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1020</width>
+    <width>1078</width>
     <height>824</height>
    </rect>
   </property>
@@ -39,20 +39,20 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QProgressBar" name="progress_winnings">
+          <widget class="QProgressBar" name="progress_losses">
            <property name="font">
             <font>
              <pointsize>14</pointsize>
             </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QProgressBar::chunk {background-color: rgb(202,0,32);}</string>
            </property>
            <property name="maximum">
             <number>100</number>
            </property>
            <property name="value">
             <number>24</number>
-           </property>
-           <property name="format">
-            <string>$300</string>
            </property>
           </widget>
          </item>
@@ -69,11 +69,14 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QProgressBar" name="progress_losses">
+          <widget class="QProgressBar" name="progress_winnings">
            <property name="font">
             <font>
              <pointsize>14</pointsize>
             </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QProgressBar::chunk {background-color: rgb(5,113,176);}</string>
            </property>
            <property name="maximum">
             <number>100</number>
@@ -82,7 +85,7 @@
             <number>24</number>
            </property>
            <property name="format">
-            <string>$1000</string>
+            <string/>
            </property>
           </widget>
          </item>
@@ -108,7 +111,7 @@
               </font>
              </property>
              <property name="text">
-              <string>Losses on last trial: &lt;font color=&quot;red&quot;&gt;$300&lt;/font&gt;</string>
+              <string>Losses on last trial: &lt;font color=&quot;#ca0020&quot;&gt;$300&lt;/font&gt;</string>
              </property>
             </widget>
            </item>
@@ -125,6 +128,18 @@
             </widget>
            </item>
           </layout>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label">
+           <property name="font">
+            <font>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Pull 100/100</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
@@ -145,24 +160,6 @@
       <property name="bottomMargin">
        <number>50</number>
       </property>
-      <item row="0" column="0">
-       <widget class="QPushButton" name="deck_button1">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>72</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>1</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="1">
        <widget class="QPushButton" name="deck_button2">
         <property name="sizePolicy">
@@ -181,8 +178,8 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QPushButton" name="deck_button3">
+      <item row="0" column="0">
+       <widget class="QPushButton" name="deck_button1">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -195,7 +192,7 @@
          </font>
         </property>
         <property name="text">
-         <string>3</string>
+         <string>1</string>
         </property>
        </widget>
       </item>
@@ -217,7 +214,37 @@
         </property>
        </widget>
       </item>
+      <item row="1" column="0">
+       <widget class="QPushButton" name="deck_button3">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>72</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>3</string>
+        </property>
+       </widget>
+      </item>
      </layout>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pushButton">
+      <property name="font">
+       <font>
+        <pointsize>14</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>I  have a hunch!</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -226,7 +253,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1020</width>
+     <width>1078</width>
      <height>21</height>
     </rect>
    </property>
