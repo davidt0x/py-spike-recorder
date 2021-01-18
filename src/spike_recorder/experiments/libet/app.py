@@ -10,8 +10,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from spike_recorder.experiments.libet.libet_ui import Ui_Libet
 from spike_recorder.experiments.libet.instructions_ui import Ui_dialog_instructions
-
 from spike_recorder.experiments.libet.data import LibetData
+
 
 # It seems I need to add this to get trace backs to show up on
 # uncaught python exceptions.
@@ -32,6 +32,16 @@ class IntroDialog(QtWidgets.QDialog, Ui_dialog_instructions):
         self.setupUi(self)
 
         self.button_browse.clicked.connect(self.get_directory)
+
+        # Lets prepopulate the output file name with something
+        index = 1
+        filename = f"libet_output{index}.csv"
+        while os.path.isfile(filename):
+            index = index + 1
+            filename = f"libet_output{index}.csv"
+
+        self.textbox_file.setText(filename)
+
 
     def reject(self):
         """
@@ -175,7 +185,8 @@ if __name__ == "__main__":
                     continue
 
 
-            # Check if we can open the file. If so, we are ready to go
+            # Check if we can open the file. If so, set the output file on the main app
+            # and we are ready to go!
             with open(filename, 'w') as f:
                 fileNoGood = False
                 ui.output_filename = intro_d.textbox_file.text()
@@ -189,7 +200,6 @@ if __name__ == "__main__":
             msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
             msg.exec_()
 
-
-
+    # Run the main app
     sys.exit(app.exec_())
 
