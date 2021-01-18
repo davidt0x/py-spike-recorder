@@ -110,6 +110,7 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
         self.button_next.setStyleSheet("background-color : red;")
         self.button_retry.setEnabled(False)
         self.button_next.setEnabled(True)
+        self.clock_widget.select_enabled = False
 
         self.update_status()
 
@@ -129,11 +130,13 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
         # and urge time.
         if self.urge_mode:
             self.button_next.setEnabled(False)
+            self.clock_widget.select_enabled = True
 
         # Check if we have finished our first set of trials, if so, now we need to enter
         # the secondary mode where we ask for the urge time
         if (self.data.num_trials+1) == self.NUM_PRACTICE_TRIALS:
             self.urge_mode = True
+            self.clock_widget.select_enabled = True
 
             QtWidgets.QMessageBox.about(self, "Instructions - Part 2",
                                         f"For the next {self.NUM_URGE_TRIALS} trials, stop the clock whenever you "

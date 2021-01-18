@@ -1,13 +1,22 @@
 import pandas as pd
 import attr
 import typing
-
+import math
 
 @attr.s(auto_attribs=True)
 class LibetRecord:
+    """
+    A Libet data record.
+
+    Args:
+        trial: The trial index.
+        stop_time_msecs: The time the trial was stopped out, in milliseconds.
+        urge_time_msecs: The time the user felt the urge to stop the clock, in milliseconds.
+            This time can be None or NaN.
+    """
     trial: int
-    stop_time_msecs: int
-    urge_time_msecs: int
+    stop_time_msecs: float = attr.ib(converter=float)
+    urge_time_msecs: typing.Union[float] = attr.ib(converter=lambda x: math.nan if x is None else float(x), default=None)
 
 
 class LibetData:
