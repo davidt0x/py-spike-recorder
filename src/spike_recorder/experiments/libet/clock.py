@@ -50,12 +50,23 @@ The original license is copied below
 #############################################################################
 
 import math
+import sys
 import numpy as np
 
-from PyQt5.QtCore import QPoint, Qt, QDateTime, QTime, QTimer, QSettings, QRect, QRectF
+from PyQt5.QtCore import QPoint, Qt, QDateTime, QTime, QTimer, QSettings, QRect, QRectF, pyqtSignal
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtGui import QColor, QPainter, QPolygon, QIcon, QFont, QPen, QBrush, QPainterPath
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
+
+
+# It seems I need to add this to get trace backs to show up on
+# uncaught python exceptions.
+def catch_exceptions(t, val, tb):
+    old_hook(t, val, tb)
+    sys.exit(-1)
+
+old_hook = sys.excepthook
+sys.excepthook = catch_exceptions
 
 
 class LibetClock(QWidget):
@@ -71,10 +82,14 @@ class LibetClock(QWidget):
     whiteShadowColor = QColor(128, 128, 128)
     darkShadowColor = QColor(20, 20, 20)
     highlightColor = QColor(255, 0, 0)
+    selectColor = QColor(49, 20, 255)
     smokeBackgroundColor = QColor(255, 255, 255)
     rubyColor = QColor(255, 255, 255)
     textColor = QColor(0, 0, 0)
     textPanelColor = QColor(255, 255, 255)
+
+    # A signal that notifies when the time selection has changed.
+    selectChange = pyqtSignal()
 
     def setShowFrame(self, showFrame):
         self.showFrame = showFrame
@@ -106,6 +121,8 @@ class LibetClock(QWidget):
         self.rotation_per_minute = 5.0
 
         self._clock_cursor_pos = None
+        self._clock_selection = None
+        self.selected_time = None
 
         self._start_time = None
         self._stop_time = None
@@ -150,6 +167,10 @@ class LibetClock(QWidget):
         font.setPointSize(13)
         self.rubyFont = font
 
+        font = QFont(font)
+        font.setPointSize(6)
+        self.selFont = font
+
     def reset_clock(self):
         """
         Reset the clock. This moves the hand to the 12 position and stops the clock.
@@ -160,6 +181,9 @@ class LibetClock(QWidget):
         self._start_time = None
         self._stop_time = None
         self.clock_stopped = True
+        self._clock_selection = None
+        self.selected_time = None
+        self.selectChange.emit()
 
     def start_clock(self):
         """
@@ -224,6 +248,10 @@ class LibetClock(QWidget):
         hlPen.setJoinStyle(Qt.MiterJoin)
         hlPen.setWidthF(0.9)
 
+        selPen = QPen(self.selectColor)
+        selPen.setJoinStyle(Qt.MiterJoin)
+        selPen.setWidthF(1.5)
+
         darkShadowPen = QPen(self.darkShadowColor)
         darkShadowPen.setJoinStyle(Qt.MiterJoin)
         darkShadowPen.setWidthF(0.9)
@@ -269,6 +297,17 @@ class LibetClock(QWidget):
             painter.setPen(hlPen)
             painter.drawEllipse(int(self._clock_cursor_pos[0] - 1), int(self._clock_cursor_pos[1] - 1), 2, 2)
 
+        if self._clock_selection is not None:
+            selPen.setWidthF(1.5)
+            painter.setPen(selPen)
+            painter.drawEllipse(int(self._clock_selection[0] - 1), int(self._clock_selection[1] - 1), 2, 2)
+            selPen.setWidthF(.2)
+            painter.setPen(selPen)
+            painter.setFont(self.selFont)
+            painter.drawText(QRect(50, -100, 40, 20), Qt.AlignCenter,
+                             "%d ms" % (self.selected_time))
+
+
         # draw hand
         painter.setPen(darkShadowPen)
         painter.setBrush(QBrush(self.minuteColor))
@@ -307,15 +346,36 @@ class LibetClock(QWidget):
             return clock_cursor_pos
 
     def mouseMoveEvent(self, event):
-        self._clock_cursor_pos = self.get_mouse_clock_pos(event.x(), event.y())
-
-    def mousePressEvent(self, event):
+        """
+        Highlight the mouse cursor on the clock dial in select mode.
+        """
         self._clock_cursor_pos = self.get_mouse_clock_pos(event.x(), event.y())
 
     def mouseReleaseEvent(self, event):
-        self._clock_cursor_pos = self.get_mouse_clock_pos(event.x(), event.y())
+        """
+        In select mode, allow the user to select the currrent time.
+        """
+        self._clock_selection = self.get_mouse_clock_pos(event.x(), event.y())
 
+        if self._clock_selection is not None:
+            # Figure out what time has been selected
+            angle = math.degrees(math.atan2(self._clock_selection[1], self._clock_selection[0])) + 90.0
 
+            if angle < 0:
+                angle = 360 + angle
+
+            self.selected_time = int((60000.0 * angle) / (self.rotation_per_minute * 360.0))
+
+            # If the clock has been running for more than 1 revolution, add the N revolutions to the selected
+            # time.
+            rotation = self.rotation_per_minute * 360.0 * (self.msecs_elapsed() / 60000.0)
+            num_revolutions = math.floor(rotation / 360.0)
+            self.selected_time = self.selected_time + (60000.0 / self.rotation_per_minute) * num_revolutions
+
+        else:
+            self.selected_time = None
+
+        self.selectChange.emit()
 
 
 if __name__ == "__main__":

@@ -46,6 +46,7 @@ class LibetData:
             self.data.pop()
             self.trial_idx = self.trial_idx - 1
 
+    @property
     def num_trials(self):
         """
         Get the number of trials recorded.

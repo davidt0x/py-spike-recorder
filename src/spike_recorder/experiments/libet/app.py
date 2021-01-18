@@ -67,7 +67,8 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
     The main application class for the Libet experiement.
     """
 
-    NUM_PRACTICE_TRIALS = 2
+    NUM_PRACTICE_TRIALS = 5
+    NUM_URGE_TRIALS = 5
 
     def __init__(self, *args, **kwargs):
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
@@ -81,6 +82,12 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
 
         self.output_filename = None
 
+        # The first sent of NUM_PRACTICE_TRIALS do not ask the urge time.
+        self.urge_mode = False
+
+        self.clock_widget.selectChange.connect(self.on_clock_select_change)
+
+
     def update_status(self):
         """
         Update any status fields with the current state of the experiment.
@@ -88,7 +95,7 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
         Returns:
             None
         """
-        self.label_status.setText(f"Trial: {self.data.num_trials()+1}")
+        self.label_status.setText(f"Trial: {self.data.num_trials+1}")
 
     def restart_trial(self):
         """
@@ -102,6 +109,7 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
         self.button_next.setText("Stop")
         self.button_next.setStyleSheet("background-color : red;")
         self.button_retry.setEnabled(False)
+        self.button_next.setEnabled(True)
 
         self.update_status()
 
@@ -117,15 +125,21 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
         self.button_next.setStyleSheet("")
         self.button_retry.setEnabled(True)
 
-        # Store the trial data
-        self.data.add_trial(stop_time_msecs=self.clock_widget.msecs_elapsed())
+        # If this is urge mode, make sure they can't go to the next trial without selecting
+        # and urge time.
+        if self.urge_mode:
+            self.button_next.setEnabled(False)
 
-        # Dump the data back out to file. We will just dump everything back out over and over again
-        # so that if the user stops half way through, they have part of their data.
-        if self.output_filename is not None:
-            self.data.to_csv(self.output_filename)
-        else:
-            logging.warning("Output filename is not definied, results are not being saved.")
+        # Check if we have finished our first set of trials, if so, now we need to enter
+        # the secondary mode where we ask for the urge time
+        if (self.data.num_trials+1) == self.NUM_PRACTICE_TRIALS:
+            self.urge_mode = True
+
+            QtWidgets.QMessageBox.about(self, "Instructions - Part 2",
+                                        f"For the next {self.NUM_URGE_TRIALS} trials, stop the clock whenever you "
+                                        f"like. After each trial, click the time on the clock when you first felt the "
+                                        f"urge to stop the clock. ")
+
 
     def next_trial_click(self):
         """
@@ -138,6 +152,19 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
         if not self.clock_widget.clock_stopped:
             self.stop_trial()
         else:
+
+            # Store the trial's data, unless the clock hasn't been started.
+            if self.clock_widget.msecs_elapsed() > 0:
+                self.data.add_trial(stop_time_msecs=self.clock_widget.msecs_elapsed(),
+                                    urge_time_msecs=self.clock_widget.selected_time)
+
+                # Dump the data back out to file. We will just dump everything back out over and over again
+                # so that if the user stops half way through, they have part of their data.
+                if self.output_filename is not None:
+                    self.data.to_csv(self.output_filename)
+                else:
+                    logging.warning("Output filename is not definied, results are not being saved.")
+
             self.restart_trial()
 
     def retry_trial_click(self):
@@ -147,11 +174,23 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
         Returns:
             None
         """
-
-        # Don't keep the last trials data
-        self.data.remove_last_trial()
-
         self.restart_trial()
+
+    def on_clock_select_change(self):
+        """
+        Triggered anytime the user selects a time on the clock.
+        """
+
+        selected_time = self.clock_widget.selected_time
+
+        # If we are in urge mode, and the user has not selected a urge time, do not allow next trial
+        # until they have done so.
+        if self.urge_mode:
+            if selected_time is not None:
+                self.button_next.setEnabled(True)
+            else:
+                # Don't turn of the next\stop button unless the clock is stopped!
+                self.button_next.setEnabled(False)
 
 
 if __name__ == "__main__":
@@ -183,7 +222,6 @@ if __name__ == "__main__":
 
                 if retval == qm.No:
                     continue
-
 
             # Check if we can open the file. If so, set the output file on the main app
             # and we are ready to go!
