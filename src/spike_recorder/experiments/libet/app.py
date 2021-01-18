@@ -196,7 +196,7 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
                 self.button_next.setEnabled(False)
 
 
-if __name__ == "__main__":
+def main():
     import sys
     app = QtWidgets.QApplication(sys.argv)
     ui = LibetMainWindow(None)
@@ -244,3 +244,6 @@ if __name__ == "__main__":
     # Run the main app
     sys.exit(app.exec_())
 
+
+if __name__ == "__main__":
+    main()

@@ -249,7 +249,7 @@ class IowaMainWindow(QtWidgets.QMainWindow, Ui_main_window):
         self.progress_losses.setFormat(f"${self.losses}")
 
 
-if __name__ == "__main__":
+def main():
     import sys
     app = QtWidgets.QApplication(sys.argv)
     ui = IowaMainWindow(None)
@@ -297,3 +297,5 @@ if __name__ == "__main__":
     # Run the main app
     sys.exit(app.exec_())
 
+if __name__ == "__main__":
+    main()
