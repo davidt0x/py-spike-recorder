@@ -126,16 +126,16 @@ class IowaMainWindow(QtWidgets.QMainWindow, Ui_main_window):
         self.progress_losses.setMaximum(self.MAX_LOSSES)
 
         # Define the deck behaviour
-        deck1 = Deck.make_deck(win_amounts=100,
+        deck1 = Deck.make_finite_deck(win_amounts=100,
                                loss_amounts=[0, 150, 200, 250, 300, 350],
                                loss_weights=[50, 10, 10, 10, 10, 10])
-        deck2 = Deck.make_deck(win_amounts=100,
+        deck2 = Deck.make_finite_deck(win_amounts=100,
                                loss_amounts=[0, 1250],
                                loss_weights=[90, 10])
-        deck3 = Deck.make_deck(win_amounts=50,
+        deck3 = Deck.make_finite_deck(win_amounts=50,
                                loss_amounts=[0, 25, 50, 75],
                                loss_weights=[40, 30, 20, 10])
-        deck4 = Deck.make_deck(win_amounts=50,
+        deck4 = Deck.make_finite_deck(win_amounts=50,
                                loss_amounts=[0, 250],
                                loss_weights=[90, 10])
 
