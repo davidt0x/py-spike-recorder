@@ -67,8 +67,8 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
     The main application class for the Libet experiement.
     """
 
-    NUM_PRACTICE_TRIALS = 5
-    NUM_URGE_TRIALS = 5
+    NUM_PRACTICE_TRIALS = 20
+    NUM_URGE_TRIALS = 20
 
     def __init__(self, *args, **kwargs):
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
