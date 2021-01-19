@@ -170,8 +170,6 @@ class LibetClock(QWidget):
             self.resize(windowSize, windowSize)
 
         font = QFont()
-        font.setStyleHint(QFont.SansSerif)
-        font.setFamily('monospace')
         font.setPointSize(12)
         self.font = font
 
