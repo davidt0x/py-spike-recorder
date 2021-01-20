@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Iowa Gambling Task Experiment</string>
   </property>
   <widget class="QWidget" name="central_widget">
    <layout class="QVBoxLayout" name="vertical_layout2">
