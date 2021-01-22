@@ -36,10 +36,45 @@ jobs:
       matrix:
         os: [ubuntu-18.04, windows-latest, macos-latest]
 
+        include:
+          - os: windows-latest
+            triplet: x64-windows-static
+          - os: ubuntu-latest
+            triplet: x64-linux
+          - os: macos-latest
+            triplet: x64-osx
+    env:
+      # Indicates the CMake build directory where project files and binaries are being produced.
+      CMAKE_BUILD_DIR: ${{ github.workspace }}/_skbuild/cmake-build/
+      # Indicates the location of the vcpkg as a Git submodule of the project repository.
+      VCPKG_ROOT: ${{ github.workspace }}/extern/Spike-Recorder/vcpkg/
+      # FIXME: Editable installs are broken at the moment due to a bug in skbuild. We need to put src on PYTHONPATH
+      PYTHONPATH: 'src'
+
     steps:
+
     - uses: actions/checkout@v2
       with:
         submodules: 'recursive'
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    # Install OS specific dependencies for some of our dependencies.
+    # Currently, this is libusb on linux for hidapi.
+    - name:  Install OS specific dependencies
+      run:   |
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          sudo apt update
+          sudo apt-get -y install libudev-dev libusb-1.0-0-dev libfox-1.6-dev
+          sudo apt-get -y install autotools-dev autoconf automake libtool
+        fi
+      shell: bash
+
+    # On Windows runners, let's ensure to have the Developer Command Prompt environment setup correctly.
+    # As used here the Developer Command Prompt created is targeting x64 and using the default Windows SDK.
+    - uses: ilammy/msvc-dev-cmd@v1
 
     - name: Setup Python
       uses: actions/setup-python@v2

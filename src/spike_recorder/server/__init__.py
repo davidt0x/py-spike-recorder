@@ -10,8 +10,12 @@ def run_wrapper():
     run()
 
 
-def launch():
+def launch(is_async: bool = False):
     p = Process(target=run_wrapper)
     p.start()
-    p.join()
+
+    if not is_async:
+        p.join()
+
+    return p
 
