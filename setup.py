@@ -29,13 +29,18 @@ except ImportError:
 # path on the machine. Whenever I tried to quote the path it would not work.
 vcpkg_toolchain_path = os.path.abspath('extern/Spike-Recorder/vcpkg/scripts/buildsystems/vcpkg.cmake')
 
+# Setup the arguments for cmake, enable vcpkg by passing the tool chain file
+cmake_args = ['-GNinja',  f'-DCMAKE_TOOLCHAIN_FILE={vcpkg_toolchain_path}']
+
+# If this is windows, make sure we build everything statically, that we can at least.
+if sys.platform.startswith('win'):
+    cmake_args.append('-DVCPKG_TARGET_TRIPLET=x64-windows-static')
+
 setup(
     packages=find_packages(where='src'),
     package_dir={"": "src"},
     zip_safe=False,
     include_package_data=True,
     cmake_install_dir="src/spike_recorder/server",
-    cmake_args=['-GNinja',
-                f'-DCMAKE_TOOLCHAIN_FILE={vcpkg_toolchain_path}'
-                ] + ['-DVCPKG_TARGET_TRIPLET=x64-windows-static'] if sys.platform.startswith('win') else []
+    cmake_args=cmake_args
 )
