@@ -1,3 +1,12 @@
+# Any shared libs in src from editable installs
+*.dll
+
+# Ignore data dir from editable install
+src/spike_recorder/server/data
+
+# Default scikit-buiild directory
+_skbuild/
+
 # Generated version
 /src/spike_recorder/version.py
 

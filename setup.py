@@ -4,24 +4,38 @@
 # Distributed under the 3-clause BSD license, see accompanying file LICENSE
 # or https://github.com/davidt0x/py-spike-recorder for details.
 
-from setuptools import setup  # isort:skip
+from __future__ import print_function
 
-# Available at setup time due to pyproject.toml
-from pybind11.setup_helpers import Pybind11Extension  # isort:skip
+import sys
+import os
 
-# Note:
-#   Sort input source files if you glob sources to ensure bit-for-bit
-#   reproducible builds (https://github.com/pybind/python_example/pull/53)
+from setuptools import find_packages
 
-ext_modules = [
-    Pybind11Extension(
-        "spike_recorder._core",
-        ["src/main.cpp"],
-        cxx_std=11,
-    ),
-]
+try:
+    from skbuild import setup
+except ImportError:
+    print(
+        "Please update pip, you need pip 10 or greater,\n"
+        " or you need to install the PEP 518 requirements in pyproject.toml yourself",
+        file=sys.stderr,
+    )
+    raise
 
+# We need to get the absolute path to the vcpkg toolchain file. It seems scikit-build
+# invokes cmake two different times (one for a cmake_test_compile). Each of these times
+# the directory it invokes from is different so a relative path won't work. ../../
+# works for the test compile but we need ../../../ for the skbuild one. Absolute path
+# gets around this. Though, I think the code below will break if there are spaces in the
+# path on the machine. Whenever I tried to quote the path it would not work.
+vcpkg_toolchain_path = os.path.abspath('extern/Spike-Recorder/vcpkg/scripts/buildsystems/vcpkg.cmake')
 
 setup(
-    ext_modules=ext_modules,
+    packages=find_packages(where='src'),
+    package_dir={"": "src"},
+    zip_safe=False,
+    include_package_data=True,
+    cmake_install_dir="src/spike_recorder/server",
+    cmake_args=['-GNinja',
+                f'-DCMAKE_TOOLCHAIN_FILE={vcpkg_toolchain_path}'
+                ] + ['-DVCPKG_TARGET_TRIPLET=x64-windows-static'] if sys.platform.startswith('win') else []
 )
