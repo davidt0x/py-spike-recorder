@@ -107,7 +107,7 @@ jobs:
 
     - uses: joerick/cibuildwheel@v1.7.4
       env:
-        CIBW_SKIP: cp27*
+        CIBW_SKIP: cp27* cp35-* pp*
         CIBW_TEST_EXTRAS: test
         CIBW_TEST_COMMAND: pytest {project}/tests
 
