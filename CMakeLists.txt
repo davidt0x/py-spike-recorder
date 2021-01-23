@@ -46,10 +46,13 @@ find_package(BASS REQUIRED)
 
 # If macos or linux, SDL2 sets -Wl,-undefined,error, we need to overide this
 # for pybind11 linking because it seems to expect to use dynamic lookup to find
-# the Python libraries. We can just append the flag, it will override the one
-# before it apparently. All of this seems like a big hack, FIXME
+# the Python libraries. All of this seems like a big hack, FIXME
 if (LINUX OR APPLE)
-  set_property(TARGET SDL2::SDL2-static APPEND PROPERTY IMPORTED_LINK_INTERFACE_LIBRARIES_RELEASE "-Xlinker -undefined;-Xlinker dynamic_lookup")
+  get_target_property(SDL_LIBS SDL2::SDL2-static IMPORTED_LINK_INTERFACE_LIBRARIES_RELEASE)
+  string(REPLACE "-Wl,-undefined,error;" "" SDL_LIBS_FIX "${SDL_LIBS}")
+  string(REPLACE "-Wl,--no-undefined;" "" SDL_LIBS_FIX "${SDL_LIBS_FIX}")
+  set_property(TARGET SDL2::SDL2-static PROPERTY IMPORTED_LINK_INTERFACE_LIBRARIES_RELEASE "${SDL_LIBS_FIX}")  
+  #set_property(TARGET SDL2::SDL2-static APPEND PROPERTY IMPORTED_LINK_INTERFACE_LIBRARIES_RELEASE "-Xlinker -undefined;-Xlinker dynamic_lookup")
 endif()
 
 
