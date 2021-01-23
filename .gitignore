@@ -1,5 +1,7 @@
 # Any shared libs in src from editable installs
 *.dll
+*.dylib
+*.so
 
 # Ignore data dir from editable install
 src/spike_recorder/server/data

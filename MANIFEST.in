@@ -4,3 +4,10 @@ graft tests
 
 include LICENSE README.md pyproject.toml setup.py setup.cfg
 global-exclude __pycache__ *.py[cod] .*
+
+include *.in
+include *.json
+include *.md
+include *.py
+include *.toml
+include *.txt
