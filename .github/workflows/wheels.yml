@@ -1,37 +1,42 @@
-name: CI
+name: wheels
 
 on:
   workflow_dispatch:
-  pull_request:
-  push:
-    branches:
-    - master
-    - main
-    - develop
-    - server_side
   release:
     types:
       - published
 
 jobs:
-  pre-commit:
-    name: Format
+  make_sdist:
+    name: Make SDist
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-python@v2
-    - uses: pre-commit/action@v2.0.0
+    - uses: actions/checkout@v2
       with:
-        extra_args: --hook-stage manual
+        submodules: 'recursive'
 
-  checks:
-    name: Check Python ${{ matrix.python-version }} on ${{ matrix.os }}
+    - name: Setup Python
+      uses: actions/setup-python@v2
+
+    - name: Install deps
+      run: python -m pip install build
+
+    - name: Build SDist
+      run: python -m build -s
+
+    - uses: actions/upload-artifact@v2
+      with:
+        path: dist/*.tar.gz
+
+  build_wheels:
+    name: Wheel on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.6, 3.9]
-        os: [macos-latest, windows-latest]
+#        os: [ubuntu-18.04, windows-latest, macos-latest]
+         os: [windows-latest, macos-latest]
+
         include:
           - os: windows-latest
             triplet: x64-windows-static
@@ -48,6 +53,7 @@ jobs:
       PYTHONPATH: 'src'
 
     steps:
+
     - uses: actions/checkout@v2
       with:
         submodules: 'recursive'
@@ -71,9 +77,34 @@ jobs:
     # As used here the Developer Command Prompt created is targeting x64 and using the default Windows SDK.
     - uses: ilammy/msvc-dev-cmd@v1
 
-    - name: Install package
-      run: python -m pip install -v -e .[test]
+    - name: Setup Python
+      uses: actions/setup-python@v2
 
-    - name: Test package
-      run: python -m pytest -ra
+    - uses: joerick/cibuildwheel@v1.7.4
+      env:
+        CIBW_SKIP: cp27*
+        CIBW_TEST_EXTRAS: test
+        CIBW_TEST_COMMAND: pytest {project}/tests
+
+    - name: Upload wheels
+      uses: actions/upload-artifact@v2
+      with:
+        path: wheelhouse/*.whl
+
+  upload_all:
+    needs: [build_wheels, make_sdist]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' && github.event.action == 'published'
+
+    steps:
+    - uses: actions/download-artifact@v2
+      with:
+        name: artifact
+        path: dist
+
+    - uses: pypa/gh-action-pypi-publish@v1.4.1
+      with:
+        user: __token__
+        # Remember to generate this and set it in "GitHub Secrets"
+        password: ${{ secrets.pypi_password }}
 
