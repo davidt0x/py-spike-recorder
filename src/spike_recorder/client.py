@@ -1,5 +1,8 @@
-#%%
 import zmq
+import multiprocessing
+
+import spike_recorder.server
+
 
 class SpikeRecorder:
     """
@@ -11,9 +14,27 @@ class SpikeRecorder:
         self.context = zmq.Context()
         self.socket = None
 
-    def start(self):
+    @staticmethod
+    def launch() -> multiprocessing.Process:
         """
-        Launch the BackyardBrains SpikeRecorder GUI application.
+        Launch the BackyardBrains SpikeRecorder app. This launches the application
+        asynchronously.
+
+        Note: the only way to safely shutdown the process from Python is to subsequently
+            connect and shutdown
+            >>> spike_client = SpikeRecorder()
+            >>> spike_client.launch()
+            >>> spike_client.connect()
+            >>> spike_client.shutdown()
+
+        Returns:
+            The multiprocessing.Process running that the application is running inside.
+        """
+        return spike_recorder.server.launch(is_async=True)
+
+    def connect(self):
+        """
+        Connect to an already running BackyardBrains SpikeRecorder GUI application.
 
         Returns:
             None
