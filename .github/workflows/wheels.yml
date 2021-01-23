@@ -68,8 +68,7 @@ jobs:
       shell: bash
 
     - name: Check Sci-kit build cmake dir
-      run: |
-        echo "CMAKE_BUILD_DIR: {{ env.CMAKE_BUILD_DIR }}"
+      run: echo {{ env.CMAKE_BUILD_DIR }}
 
     # Install OS specific dependencies for some of our dependencies.
     # Currently, this is libusb on linux for hidapi.
