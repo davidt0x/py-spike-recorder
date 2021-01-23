@@ -1,6 +1,9 @@
 import zmq
 import multiprocessing
 
+import logging
+logger = logging.getLogger(__name__)
+
 import spike_recorder.server
 
 
@@ -43,7 +46,7 @@ class SpikeRecorder:
         # Launch the SpikeRecorder process
 
         # Connect to the command server, wait until
-        print("Connecting to SpikeRecorder server ...")
+        logger.info("Connecting to SpikeRecorder server ...")
         self.socket = self.context.socket(zmq.REQ)
         self.socket.connect("tcp://localhost:5555")
 
@@ -56,7 +59,7 @@ class SpikeRecorder:
         """
         self._check_server()
 
-        print("Shutting down SpikeRecorder ...")
+        logger.info("Shutting down SpikeRecorder ...")
 
         # Send the shutdown command
         self._send("shutdown")
@@ -70,7 +73,7 @@ class SpikeRecorder:
         """
         self._check_server()
         self._send("start")
-        print("Recording Started")
+        logger.info("Recording Started")
 
     def stop_record(self):
         """
@@ -85,7 +88,7 @@ class SpikeRecorder:
         """
         self._check_server()
         self._send("stop")
-        print("Recording Stopped")
+        logger.info("Recording Stopped")
 
     def push_event_marker(self, marker: str):
         """
@@ -131,9 +134,9 @@ class SpikeRecorder:
 
         # FIXME: This should probably be a JSON message or something
 
-        print(f"Sending: {command}")
+        logger.info(f"Sending: {command}")
         self.socket.send(command.encode())
 
         # Get the reply.
         message = self.socket.recv()
-        print(f"Received: {message}")
+        logger.info(f"Received: {message}")
