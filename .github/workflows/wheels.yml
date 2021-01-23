@@ -34,13 +34,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, windows-latest, macos-latest]
+#        os: [ubuntu-18.04, windows-latest, macos-latest]
+         os: [windows-latest, macos-latest]
 
         include:
           - os: windows-latest
             triplet: x64-windows-static
-          - os: ubuntu-latest
-            triplet: x64-linux
+ #         - os: ubuntu-latest
+ #           triplet: x64-linux
           - os: macos-latest
             triplet: x64-osx
     env:
