@@ -12,7 +12,7 @@ from ._core import __doc__, run
 # Fix for MacOS High Sierra, see:
 # https://stackoverflow.com/questions/30669659/multiproccesing-and-error-the-process-has-forked-and-you-cannot-use-this-corefou
 if platform.system() == "Darwin":
-    multiprocessing.set_start_method('spawn')
+    multiprocessing.set_start_method('spawn', force=True)
 
 
 def _run_wrapper():
@@ -42,4 +42,12 @@ def launch(is_async: bool = False) -> multiprocessing.Process:
         p.join()
 
     return p
+
+
+def main():
+    launch()
+
+
+if __name__ == "__main__":
+    main()
 
