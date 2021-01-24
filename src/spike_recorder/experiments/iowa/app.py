@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 import sys
 import os
+import time
+
+import logging
+logger = logging.getLogger(__name__)
+
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -9,6 +14,7 @@ from spike_recorder.experiments.iowa.iowa_ui import Ui_main_window
 from spike_recorder.experiments.iowa.win_message_ui import Ui_Dialog as Ui_win_message
 from spike_recorder.experiments.iowa.deck import Deck
 from spike_recorder.experiments.iowa.data import IowaData
+from spike_recorder.client import SpikeRecorder
 
 # It seems I need to add this to get trace backs to show up on
 # uncaught python exceptions.
@@ -97,7 +103,7 @@ class IowaMainWindow(QtWidgets.QMainWindow, Ui_main_window):
     """
 
     # The maximum number of deck pulls to allow the user.
-    MAX_DECK_PULLS = 100
+    MAX_DECK_PULLS = 10
 
     MAX_WINNINGS = MAX_DECK_PULLS * 350
 
@@ -110,6 +116,9 @@ class IowaMainWindow(QtWidgets.QMainWindow, Ui_main_window):
     DELAY_SECS = 3
 
     def __init__(self, *args, **kwargs):
+        self.spike_record = kwargs.get('spike_record', False)
+        kwargs.pop('spike_record')
+
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
         self.setupUi(self)
 
@@ -157,6 +166,12 @@ class IowaMainWindow(QtWidgets.QMainWindow, Ui_main_window):
         # Setup the data recording
         self.data = IowaData()
 
+        # Launch the spike recorder if needed
+        if self.spike_record:
+            self._spike_record_proc = SpikeRecorder.launch()
+            self.record_client = SpikeRecorder()
+            self.record_client.connect()
+
     def deck_button_pressed(self):
         """
         The user has drawn from a deck. Lets see what they win. This is the main event of the application.
@@ -184,16 +199,18 @@ class IowaMainWindow(QtWidgets.QMainWindow, Ui_main_window):
         # Update the status display
         self.update_status()
 
-        # Add the data and rewrite the experiemental data to the file.
+        # Add the data and rewrite the experimental data to the file.
         self.data.add_trial(deck=deck_index, win_amount=win_amount, loss_amount=loss_amount,
                             hunch=self.is_hunch, sure=self.is_sure)
+
+        self.record_client.push_event_marker(f"Deck Pull #{self.get_num_pulls()}: Deck #{deck_index}")
 
         # Dump the data back out to file. We will just dump everything back out over and over again
         # so that if the user stops half way through, they have part of their data.
         if self.output_filename is not None:
             self.data.to_csv(self.output_filename)
         else:
-            logging.warning("Output filename is not definied, results are not being saved.")
+            logger.warning("Output filename is not definied, results are not being saved.")
 
         if self.DELAY_SECS and self.DELAY_SECS > 0:
             win_diag = WinDialog(win_amount=win_amount, loss_amount=loss_amount, delay_seconds=self.DELAY_SECS)
@@ -208,7 +225,6 @@ class IowaMainWindow(QtWidgets.QMainWindow, Ui_main_window):
 
             self.close()
 
-
     def update_hunch(self):
         """
         Allow the user to record when they get a hunch by pressing a button.
@@ -221,13 +237,14 @@ class IowaMainWindow(QtWidgets.QMainWindow, Ui_main_window):
             self.hunch_button.setText("I am pretty sure!")
 
             # Set event to spike recorder to mark in the recording when a hunch was recorded
+            self.record_client.push_event_marker("Hunch!")
         else:
             if not self.is_sure:
                 self.is_sure = True
                 self.hunch_button.setEnabled(False)
 
                 # Set and event in the spike recorder to mark in the recording when the user is sure.
-
+                self.record_client.push_event_marker("Sure!")
 
     def get_num_pulls(self):
         """
@@ -260,9 +277,19 @@ class IowaMainWindow(QtWidgets.QMainWindow, Ui_main_window):
 
 
 def main():
+    import argparse
     import sys
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--spike-recorder', action='store_true',
+                        default=False,
+                        help='Launch Backyard Brains Spike Recorder in background.')
+
+    args = parser.parse_args()
+
     app = QtWidgets.QApplication(sys.argv)
-    ui = IowaMainWindow(None)
+
+    ui = IowaMainWindow(spike_record=args.spike_recorder)
     ui.showNormal()
 
     # Show the instructions and ask for an output file name. Do some error
@@ -304,8 +331,19 @@ def main():
             msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
             msg.exec_()
 
+    # Start a spike recorder recording for this session
+    if ui.spike_record:
+        ui.record_client.start_record()
+
     # Run the main app
-    sys.exit(app.exec_())
+    ret = app.exec_()
+
+    if ui.spike_record:
+        ui.record_client.stop_record()
+        time.sleep(2)
+        ui.record_client.shutdown()
+
+    sys.exit(ret)
 
 if __name__ == "__main__":
     main()

@@ -1,10 +1,69 @@
 import zmq
+import attr
+import cattr
+import json
 import multiprocessing
+
+from typing import Dict
+from enum import unique, Enum
 
 import logging
 logger = logging.getLogger(__name__)
 
 import spike_recorder.server
+import os
+
+@unique
+class CommandType(Enum):
+    """
+    The type of command we want to execute on the server side.
+
+        START_RECORD: Start a recording, this is equivalent to pressing the record button in GUI
+        STOP_RECORDING: Stop a recording, this is equivalent to pressing the record button in GUI
+        PUSH_EVENT_MARKER: Push an event to the recording.
+        SHUTDOWN: Shutdown the server.
+        REPLY_OK: Server sends this back if command is accepted.
+        REPLY_ERROR: Server sends this back if command failed.
+
+    """
+    START_RECORD = "START_RECORD"
+    STOP_RECORD = "STOP_RECORD"
+    PUSH_EVENT_MARKER = "PUSH_EVENT_MARKER"
+    SHUTDOWN = "SHUTDOWN"
+    REPLY_OK = "REPLY_OK"
+    REPLY_ERROR = "REPLY_ERROR"
+
+
+@attr.s(auto_attribs=True)
+class CommandMsg:
+    """
+    A structure to represent command passed to the SpikeRecorder application server side. These
+    are serialized to JSON and sent over ZeroMQ.
+    """
+    type: CommandType
+    args: Dict = attr.ib(default=attr.Factory(dict))
+
+    def to_json(self) -> str:
+        """
+        Serialize this CommandMsg to JSON
+
+        Returns:
+            A string containing the JSON for this message.
+        """
+        return json.dumps(cattr.unstructure(self))
+
+    @classmethod
+    def from_json(cls, json_str) -> 'CommandMsg':
+        """
+        Convert a JSON string to CommandMsg
+
+        Args:
+            json_str: The JSON string to parse
+
+        Returns:
+            A CommandMsg instance for this JSON string.
+        """
+        return cattr.structure(json.loads(json_str), cls)
 
 
 class SpikeRecorder:
@@ -62,17 +121,35 @@ class SpikeRecorder:
         logger.info("Shutting down SpikeRecorder ...")
 
         # Send the shutdown command
-        self._send("shutdown")
+        self._send(CommandMsg(type=CommandType.SHUTDOWN))
 
-    def start_record(self):
+    def start_record(self, filename: str = None):
         """
         Begin a recording session.
+
+        Args:
+            filename: Either a filename or directory. If a filename it must end .wav. If a directory,
+                then the SpikeRecorder app will generate a unique filename in that directory and it will be
+                 displayed in the app at the end of recording. If None, the default Spike Recording recording
+                 path and filenames will be used.
 
         Returns:
             None
         """
+
+        if filename == "":
+            filename = None
+
+        # If we are dealing with a relative path, make it absolute.
+        if filename is not None:
+            filename = os.path.abspath(filename)
+
         self._check_server()
-        self._send("start")
+        if filename is None:
+            self._send(CommandMsg(type=CommandType.START_RECORD))
+        else:
+            self._send(CommandMsg(type=CommandType.START_RECORD, args={'filename': filename}))
+
         logger.info("Recording Started")
 
     def stop_record(self):
@@ -87,7 +164,7 @@ class SpikeRecorder:
             None
         """
         self._check_server()
-        self._send("stop")
+        self._send(CommandMsg(type=CommandType.STOP_RECORD))
         logger.info("Recording Stopped")
 
     def push_event_marker(self, marker: str):
@@ -104,11 +181,7 @@ class SpikeRecorder:
         """
 
         self._check_server()
-
-        if marker not in ['stop', 'start', 'shutdown']:
-            self._send(marker)
-        else:
-            raise ValueError(f"Can't send event marker called {marker}, this a reserved value!")
+        self._send(CommandMsg(type=CommandType.PUSH_EVENT_MARKER, args={'name': marker}))
 
     def _check_server(self):
         """
@@ -120,23 +193,29 @@ class SpikeRecorder:
         if not self.socket:
             raise ValueError("SpikeRecorder server connection not setup!")
 
-    def _send(self, command):
+    def _send(self, command: CommandMsg) -> CommandMsg:
         """
         Send a command message to SpikeRecorder GUI application server. This is just a string message
         send to a ZeroMQ socket.
 
         Args:
-            command: The string command to send.
+            command: A command message to send to the server
 
         Returns:
-            None
+            The CommandMsg we received back as a reply
         """
 
-        # FIXME: This should probably be a JSON message or something
-
         logger.info(f"Sending: {command}")
-        self.socket.send(command.encode())
+        self.socket.send(command.to_json().encode())
 
         # Get the reply.
-        message = self.socket.recv()
-        logger.info(f"Received: {message}")
+        reply_str = self.socket.recv()
+
+        # Remove the null terminator
+        reply_str = reply_str[0:len(reply_str)-1]
+
+        reply = CommandMsg.from_json(reply_str)
+        logger.info(f"Received: {reply}")
+
+        if reply.type == CommandType.REPLY_ERROR:
+            raise Exception(f"Spike-Recorder Application Command Error: \n{reply}")

@@ -9,7 +9,12 @@ cd ..\..\
 
 rem Clean out the last _skbuild directory, eggs, and targets from editable
 rem install.
-rd /s /q  _skbuild
+set CMAKE_BUILD_DIR=_skbuild\win-amd64-3.8\cmake-build
+rd /s /q  "%CMAKE_BUILD_DIR%\bass"
+rd /s /q  "%CMAKE_BUILD_DIR%\data"
+rd /s /q  "%CMAKE_BUILD_DIR%\CMakeFiles"
+del /s /q /f "%CMAKE_BUILD_DIR%\CMakeCache.txt"
+
 rd /s /q "spike_recorder.egg-info"
 rd /s /q "src\spike_recorder.egg-info"
 del /s /q /f src\spike_recorder\server\*.pyd

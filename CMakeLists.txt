@@ -43,6 +43,8 @@ find_package(sdl2-image CONFIG REQUIRED)
 find_package(OpenGL REQUIRED COMPONENTS OpenGL)
 find_package(cppzmq REQUIRED)
 find_package(BASS REQUIRED)
+find_package(nlohmann_json REQUIRED)
+
 
 # If macos or linux, SDL2 sets -Wl,-undefined,error, we need to overide this
 # for pybind11 linking because it seems to expect to use dynamic lookup to find
@@ -105,6 +107,7 @@ target_link_libraries(_core PUBLIC
 	OpenGL::GL
 	BASS
 	cppzmq
+	nlohmann_json::nlohmann_json
 	${PLATFORM_LIBS})
 
 target_compile_definitions(_core PUBLIC -DSIGSLOT_PURE_ISO -DSDL_MAIN_HANDLED)
