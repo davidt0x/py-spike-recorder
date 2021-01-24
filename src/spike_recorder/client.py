@@ -107,6 +107,10 @@ class SpikeRecorder:
         # Connect to the command server, wait until
         logger.info("Connecting to SpikeRecorder server ...")
         self.socket = self.context.socket(zmq.REQ)
+
+        # Set the receive timeout to 500 milliseconds
+        self.socket.setsockopt(zmq.RCVTIMEO, 500)
+
         self.socket.connect("tcp://localhost:5555")
 
     def shutdown(self, block: bool = False):

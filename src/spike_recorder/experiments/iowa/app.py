@@ -350,7 +350,10 @@ def main():
 
     # Start a spike recorder recording for this session
     if ui.spike_record:
-        ui.record_client.start_record()
+        # Generate the recording filename from the output filename
+        record_filename = os.path.splitext(filename)[0] + ".wav"
+        ui.record_client.start_record(record_filename)
+        logger.info(f"Generating recording: {record_filename}")
 
     # Run the main app
     ret = app.exec_()
