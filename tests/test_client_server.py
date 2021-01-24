@@ -4,7 +4,7 @@ import os
 from spike_recorder.client import SpikeRecorder
 
 
-def test_client():
+def test_client(tmp_path):
     """
     Integrated test of SpikeRecorder client server
 
@@ -16,6 +16,9 @@ def test_client():
         - Shuts things down
 
     """
+    wav_file_name = tmp_path.joinpath("test.wav").absolute().as_posix()
+    event_file_name = tmp_path.joinpath("test-events.txt").absolute().as_posix()
+
     recorder_client = SpikeRecorder()
 
     recorder_client.launch()
@@ -25,7 +28,7 @@ def test_client():
     time.sleep(5)
 
     # Start a recording
-    recorder_client.start_record("test.wav")
+    recorder_client.start_record(wav_file_name)
 
     time.sleep(3)
 
@@ -41,8 +44,8 @@ def test_client():
     time.sleep(3)
 
     # Make sure the recording session WAV and events txt is there.
-    #assert os.path.isfile("test.wav")
-    #assert os.path.isfile("test-events.txt")
+    assert os.path.isfile(wav_file_name)
+    assert os.path.isfile(event_file_name)
 
     # Shutdown
     recorder_client.shutdown()
