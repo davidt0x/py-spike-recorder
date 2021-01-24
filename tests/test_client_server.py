@@ -22,7 +22,7 @@ def test_client():
     recorder_client.connect()
 
     # Give things time to show up
-    time.sleep(3)
+    time.sleep(5)
 
     # Start a recording
     recorder_client.start_record("test.wav")

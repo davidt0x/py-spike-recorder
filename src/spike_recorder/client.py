@@ -109,9 +109,12 @@ class SpikeRecorder:
         self.socket = self.context.socket(zmq.REQ)
         self.socket.connect("tcp://localhost:5555")
 
-    def shutdown(self):
+    def shutdown(self, block: bool = False):
         """
         Close the SpikeRecorder GUI application completely.
+
+        Args:
+            block: Whether to block and wait for a reply from the server. True means wait, False means don't
 
         Returns:
             None
@@ -121,9 +124,9 @@ class SpikeRecorder:
         logger.info("Shutting down SpikeRecorder ...")
 
         # Send the shutdown command
-        self._send(CommandMsg(type=CommandType.SHUTDOWN))
+        self._send(CommandMsg(type=CommandType.SHUTDOWN), block=block)
 
-    def start_record(self, filename: str = None):
+    def start_record(self, filename: str = None, block: bool = True):
         """
         Begin a recording session.
 
@@ -132,6 +135,7 @@ class SpikeRecorder:
                 then the SpikeRecorder app will generate a unique filename in that directory and it will be
                  displayed in the app at the end of recording. If None, the default Spike Recording recording
                  path and filenames will be used.
+            block: Whether to block and wait for a reply from the server. True means wait, False means don't
 
         Returns:
             None
@@ -146,13 +150,13 @@ class SpikeRecorder:
 
         self._check_server()
         if filename is None:
-            self._send(CommandMsg(type=CommandType.START_RECORD))
+            self._send(CommandMsg(type=CommandType.START_RECORD), block=block)
         else:
-            self._send(CommandMsg(type=CommandType.START_RECORD, args={'filename': filename}))
+            self._send(CommandMsg(type=CommandType.START_RECORD, args={'filename': filename}), block=block)
 
         logger.info("Recording Started")
 
-    def stop_record(self):
+    def stop_record(self, block: bool = True):
         """
         Stop a recording session. This results in the saving of two files, a WAV file with the
         recorded spike data and a txt file annotating event markers that were generated while
@@ -160,14 +164,17 @@ class SpikeRecorder:
 
         https://backyardbrains.com/products/files/SpikeRecorderDocumentation.2018.02.pdf
 
+        Args:
+            block: Whether to block and wait for a reply from the server. True means wait, False means don't
+
         Returns:
             None
         """
         self._check_server()
-        self._send(CommandMsg(type=CommandType.STOP_RECORD))
+        self._send(CommandMsg(type=CommandType.STOP_RECORD), block=block)
         logger.info("Recording Stopped")
 
-    def push_event_marker(self, marker: str):
+    def push_event_marker(self, marker: str, block: bool = True):
         """
         Immediately push an event marker into the recordring. The SpikeRecorder GUI application
         only supports adding markers name 0-9 by pressing the numeric keys on the keyboard. This
@@ -175,13 +182,14 @@ class SpikeRecorder:
 
         Args:
             marker: An arbitrary string label to identify this marker.
+            block: Whether to block and wait for a reply from the server. True means wait, False means don't
 
         Returns:
             None
         """
 
         self._check_server()
-        self._send(CommandMsg(type=CommandType.PUSH_EVENT_MARKER, args={'name': marker}))
+        self._send(CommandMsg(type=CommandType.PUSH_EVENT_MARKER, args={'name': marker}), block=block)
 
     def _check_server(self):
         """
@@ -193,13 +201,14 @@ class SpikeRecorder:
         if not self.socket:
             raise ValueError("SpikeRecorder server connection not setup!")
 
-    def _send(self, command: CommandMsg) -> CommandMsg:
+    def _send(self, command: CommandMsg, block: bool = True) -> CommandMsg:
         """
         Send a command message to SpikeRecorder GUI application server. This is just a string message
         send to a ZeroMQ socket.
 
         Args:
             command: A command message to send to the server
+            no_block: Fire the message and don't wait for a response
 
         Returns:
             The CommandMsg we received back as a reply
@@ -208,14 +217,16 @@ class SpikeRecorder:
         logger.info(f"Sending: {command}")
         self.socket.send(command.to_json().encode())
 
-        # Get the reply.
-        reply_str = self.socket.recv()
+        if block:
 
-        # Remove the null terminator
-        reply_str = reply_str[0:len(reply_str)-1]
+            # Get the reply.
+            reply_str = self.socket.recv()
 
-        reply = CommandMsg.from_json(reply_str)
-        logger.info(f"Received: {reply}")
+            # Remove the null terminator
+            reply_str = reply_str[0:len(reply_str)-1]
 
-        if reply.type == CommandType.REPLY_ERROR:
-            raise Exception(f"Spike-Recorder Application Command Error: \n{reply}")
+            reply = CommandMsg.from_json(reply_str)
+            logger.info(f"Received: {reply}")
+
+            if reply.type == CommandType.REPLY_ERROR:
+                raise Exception(f"Spike-Recorder Application Command Error: \n{reply}")

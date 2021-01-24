@@ -52,7 +52,7 @@ class IntroDialog(QtWidgets.QDialog, Ui_dialog_instructions):
         Returns:
             None
         """
-        sys.exit(0)
+        self.parent().close()
 
     def get_directory(self):
         dialog = QtWidgets.QFileDialog()
@@ -102,28 +102,27 @@ class IowaMainWindow(QtWidgets.QMainWindow, Ui_main_window):
     The main window GUI for the Iowa Gambling task experiment.
     """
 
-    # The maximum number of deck pulls to allow the user.
-    MAX_DECK_PULLS = 10
-
-    MAX_WINNINGS = MAX_DECK_PULLS * 350
-
-    MAX_LOSSES = MAX_DECK_PULLS * 350
-
-    # The starting winnings
-    INITIAL_WINNINGS = 2000
-
     # How long to pause between deck pulls
     DELAY_SECS = 3
 
-    def __init__(self, *args, **kwargs):
-        self.spike_record = kwargs.get('spike_record', False)
-        kwargs.pop('spike_record')
+    def __init__(self, total_deck_pulls: int = 100, spike_record: bool = False):
 
-        QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
+        self.spike_record = spike_record
+        self.total_deck_pulls = total_deck_pulls
+
+        # And estimate of the max winnings, this is probably wrong but I need
+        # something for the maxes on the progress bars.
+        self.max_winnings = self.total_deck_pulls * 350
+        self.max_losses = self.total_deck_pulls * 350
+
+        # The starting winnings
+        self.initial_winnings = 2000
+
+        QtWidgets.QMainWindow.__init__(self)
         self.setupUi(self)
 
         # Setup the exerpiment status variables
-        self.winnings = self.INITIAL_WINNINGS
+        self.winnings = self.initial_winnings
         self.losses = 0
         self.last_win = 0
         self.last_loss = 0
@@ -131,8 +130,8 @@ class IowaMainWindow(QtWidgets.QMainWindow, Ui_main_window):
         self.is_hunch = False
         self.is_sure = False
 
-        self.progress_winnings.setMaximum(self.MAX_WINNINGS)
-        self.progress_losses.setMaximum(self.MAX_LOSSES)
+        self.progress_winnings.setMaximum(self.max_winnings)
+        self.progress_losses.setMaximum(self.max_losses)
 
         # Define the deck behaviour
         deck1 = Deck.make_finite_deck(win_amounts=100,
@@ -168,9 +167,12 @@ class IowaMainWindow(QtWidgets.QMainWindow, Ui_main_window):
 
         # Launch the spike recorder if needed
         if self.spike_record:
-            self._spike_record_proc = SpikeRecorder.launch()
             self.record_client = SpikeRecorder()
+            self.record_client.launch()
             self.record_client.connect()
+
+        # Move the window over a bit to make room for the SpikeRecorder app
+        self.move(10, 10)
 
     def deck_button_pressed(self):
         """
@@ -203,7 +205,8 @@ class IowaMainWindow(QtWidgets.QMainWindow, Ui_main_window):
         self.data.add_trial(deck=deck_index, win_amount=win_amount, loss_amount=loss_amount,
                             hunch=self.is_hunch, sure=self.is_sure)
 
-        self.record_client.push_event_marker(f"Deck Pull #{self.get_num_pulls()}: Deck #{deck_index}")
+        if self.spike_record:
+            self.record_client.push_event_marker(f"Deck Pull #{self.get_num_pulls()}: Deck #{deck_index}")
 
         # Dump the data back out to file. We will just dump everything back out over and over again
         # so that if the user stops half way through, they have part of their data.
@@ -213,11 +216,15 @@ class IowaMainWindow(QtWidgets.QMainWindow, Ui_main_window):
             logger.warning("Output filename is not definied, results are not being saved.")
 
         if self.DELAY_SECS and self.DELAY_SECS > 0:
-            win_diag = WinDialog(win_amount=win_amount, loss_amount=loss_amount, delay_seconds=self.DELAY_SECS)
+            win_diag = WinDialog(parent=self, win_amount=win_amount, loss_amount=loss_amount, delay_seconds=self.DELAY_SECS)
             win_diag.exec_()
 
-        if self.get_num_pulls() >= self.MAX_DECK_PULLS:
-            msg = QtWidgets.QMessageBox()
+        if self.get_num_pulls() >= self.total_deck_pulls:
+
+            if self.spike_record:
+                self.record_client.stop_record()
+
+            msg = QtWidgets.QMessageBox(parent=self)
             msg.setText("Experiment Complete!")
             msg.setWindowTitle("Done")
             msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
@@ -237,14 +244,16 @@ class IowaMainWindow(QtWidgets.QMainWindow, Ui_main_window):
             self.hunch_button.setText("I am pretty sure!")
 
             # Set event to spike recorder to mark in the recording when a hunch was recorded
-            self.record_client.push_event_marker("Hunch!")
+            if self.spike_record:
+                self.record_client.push_event_marker("Hunch!")
         else:
             if not self.is_sure:
                 self.is_sure = True
                 self.hunch_button.setEnabled(False)
 
                 # Set and event in the spike recorder to mark in the recording when the user is sure.
-                self.record_client.push_event_marker("Sure!")
+                if self.spike_record:
+                    self.record_client.push_event_marker("Sure!")
 
     def get_num_pulls(self):
         """
@@ -267,7 +276,7 @@ class IowaMainWindow(QtWidgets.QMainWindow, Ui_main_window):
         net = self.last_win - self.last_loss
         color = "#0571b0" if net >= 0 else "#ca0020"
         self.label_net_win.setText(f'Net Winnings: <font color="{color}">${net}</font>')
-        self.label_pull_count.setText(f"Pull {self.get_num_pulls()}/{self.MAX_DECK_PULLS}")
+        self.label_pull_count.setText(f"Pull {self.get_num_pulls()}/{self.total_deck_pulls}")
 
         # Update the progress bars
         self.progress_winnings.setValue(self.winnings)
@@ -275,21 +284,29 @@ class IowaMainWindow(QtWidgets.QMainWindow, Ui_main_window):
         self.progress_losses.setValue(self.losses)
         self.progress_losses.setFormat(f"${self.losses}")
 
+    def closeEvent(self, event):
+        if self.spike_record:
+            self.record_client.shutdown()
+
+        sys.exit(0)
+
 
 def main():
     import argparse
     import sys
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--spike-recorder', action='store_true',
+    parser.add_argument('--spike-record', action='store_true',
                         default=False,
                         help='Launch Backyard Brains Spike Recorder in background.')
+    parser.add_argument('--total-deck-pulls', type=int, default=100,
+                        help='The total number of deck pulls in the experiment.')
 
     args = parser.parse_args()
 
     app = QtWidgets.QApplication(sys.argv)
 
-    ui = IowaMainWindow(spike_record=args.spike_recorder)
+    ui = IowaMainWindow(**vars(args))
     ui.showNormal()
 
     # Show the instructions and ask for an output file name. Do some error
@@ -298,7 +315,7 @@ def main():
     while fileNoGood:
         # Try to open the output file for writing
         try:
-            intro_d = IntroDialog()
+            intro_d = IntroDialog(parent=ui)
             intro_d.show()
             intro_d.textbox_file.setFocus()
             intro_d.exec_()
@@ -311,7 +328,7 @@ def main():
                 qm = QtWidgets.QMessageBox
                 retval = qm.question(intro_d, "", "This file already exists. "
                                                   "Are you sure you want it to be overwritten?",
-                                     qm.Yes | qm.No)
+                                     qm.Yes | qm.No, parent=ui)
 
                 if retval == qm.No:
                     continue
@@ -323,7 +340,7 @@ def main():
                 ui.output_filename = intro_d.textbox_file.text()
 
         except Exception as ex:
-            msg = QtWidgets.QMessageBox()
+            msg = QtWidgets.QMessageBox(parent=ui)
             msg.setIcon(QtWidgets.QMessageBox.Critical)
             msg.setText("Output file could not be opened. Check the path.")
             msg.setDetailedText(f"{ex}")
@@ -339,11 +356,10 @@ def main():
     ret = app.exec_()
 
     if ui.spike_record:
-        ui.record_client.stop_record()
-        time.sleep(2)
         ui.record_client.shutdown()
 
     sys.exit(ret)
+
 
 if __name__ == "__main__":
     main()
