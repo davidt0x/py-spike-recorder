@@ -45,7 +45,7 @@ jobs:
       
       # FIXME: Editable installs are broken at the moment due to a bug in skbuild. We need to put src on PYTHONPATH
       PYTHONPATH: 'src'
-      
+
       # This needs to be set on MacOS High Sierra to avoid a crash apparently
       # See: https://stackoverflow.com/questions/50168647/multiprocessing-causes-python-to-crash-and-gives-an-error-may-have-been-in-progr
       OBJC_DISABLE_INITIALIZE_FORK_SAFETY: 'YES'
