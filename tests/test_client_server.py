@@ -8,7 +8,7 @@ def test_client(tmp_path):
     """
     Integrated test of SpikeRecorder client server
 
-        - Lauchs server application.
+        - Launches server application.
         - Connects
         - Starts a recording
         - Sends some event markers
