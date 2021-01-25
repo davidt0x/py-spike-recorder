@@ -376,7 +376,7 @@ class LibetClock(QWidget):
             x, y = self.rotated_point(0, -76, i * 360 / 12)
             painter.drawText(QRect(x - 10, y - 10, 20, 20), Qt.AlignCenter, "%d" % (hour_nums[i]))
 
-        # Draw the mouse curosor highlight
+        # Draw the mouse cursor highlight
         if self._clock_cursor_pos is not None and self._select_enabled:
             painter.setPen(hlPen)
             painter.drawEllipse(int(self._clock_cursor_pos[0] - 1), int(self._clock_cursor_pos[1] - 1), 2, 2)

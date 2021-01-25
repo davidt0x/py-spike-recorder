@@ -7,7 +7,7 @@ import sys
 import logging
 logger = logging.getLogger(__name__)
 
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 
 from spike_recorder.experiments.app_runner import run_app
 from spike_recorder.experiments.libet.libet_ui import Ui_Libet
@@ -85,6 +85,11 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
         self.button_next.clicked.connect(self.next_trial_click)
         self.button_retry.clicked.connect(self.retry_trial_click)
 
+        # Don't let the buttons get focus so they can't be pressed with the space bar. This allows
+        # us to press then on keyPress events rather than release events.
+        self.button_next.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self.button_retry.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+
         self.data = LibetData()
 
         self.output_filename = None
@@ -105,6 +110,7 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
 
         # Move the window over a bit to make room for the SpikeRecorder app
         self.move(10, 10)
+
 
     def update_status(self):
         """
@@ -253,6 +259,27 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
         """
         if self.spike_record:
             self.record_client.push_event_marker(marker)
+
+    def keyPressEvent(self, event):
+        """
+        Stop and start the clock on press of space bar.
+
+        Args:
+            event: The keyboard press event.
+
+        Returns:
+            None
+        """
+
+        # If the space bar has been pressed and this isn't an auto repeat, to avoid multiple presses if held down.
+        if event.key() == QtCore.Qt.Key_Space and not event.isAutoRepeat():
+            self.next_trial_click()
+
+        # If the space bar has been pressed and this isn't an auto repeat, to avoid multiple presses if held down.
+        if event.key() == QtCore.Qt.Key_R and not event.isAutoRepeat():
+            self.retry_trial_click()
+
+        event.accept()
 
 
 def main():
