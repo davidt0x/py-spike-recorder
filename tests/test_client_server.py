@@ -1,9 +1,10 @@
 import time
-import os
+import pytest
 
 from spike_recorder.client import SpikeRecorder
 
 
+@pytest.mark.skip
 def test_client(tmp_path):
     """
     Integrated test of SpikeRecorder client server
