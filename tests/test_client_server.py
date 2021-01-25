@@ -4,7 +4,7 @@ import pytest
 from spike_recorder.client import SpikeRecorder
 
 
-@pytest.mark.skip
+@pytest.mark.xfail(reason="This tests fails in CI, at least for MacOS.")
 def test_client(tmp_path):
     """
     Integrated test of SpikeRecorder client server
