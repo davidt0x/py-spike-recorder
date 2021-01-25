@@ -298,9 +298,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--spike-record', action='store_true',
                         default=False,
-                        help='Launch Backyard Brains Spike Recorder in background.')
+                        help='Launch Backyard Brains Spike Recorder in background. Default is do not run.')
     parser.add_argument('--total-deck-pulls', type=int, default=100,
-                        help='The total number of deck pulls in the experiment.')
+                        help='The total number of deck pulls in the experiment. Default is 100.')
 
     args = parser.parse_args()
 
