@@ -134,7 +134,7 @@ class LibetClock(QWidget):
     def __init__(self, parent=None, showFrame=False, windowSize=None):
         super(LibetClock, self).__init__(parent)
 
-        self.rotation_per_minute = 5.0
+        self._rotations_per_minute = 5.0
 
         self._clock_cursor_pos = None
         self._clock_selection = None
@@ -203,6 +203,29 @@ class LibetClock(QWidget):
         """
 
         return self._selected_time
+
+    @property
+    def rotations_per_minute(self) -> float:
+        """
+        The number of rotations the clock should make per minute.
+
+        Returns:
+            The rotations per minute.
+        """
+        return self._rotations_per_minute
+
+    @rotations_per_minute.setter
+    def rotations_per_minute(self, value: float):
+        """
+        Set the number of rotations the clock should make per minute.
+
+        Args:
+            value: The number of rotations the clock should make per minute.
+
+        Returns:
+            None
+        """
+        self._rotations_per_minute = float(value)
 
     @property
     def select_enabled(self) -> bool:
@@ -297,7 +320,7 @@ class LibetClock(QWidget):
             self._start_time = QDateTime.currentDateTime().time()
 
         # Compute the hand rotation based on the elapsed milliseconds
-        rotation = math.fmod(self.rotation_per_minute * 360.0 * (self.msecs_elapsed() / 60000.0), 360.0)
+        rotation = math.fmod(self._rotations_per_minute * 360.0 * (self.msecs_elapsed() / 60000.0), 360.0)
 
         # Start all the drawing.
         handColor = self.handColor
@@ -353,7 +376,7 @@ class LibetClock(QWidget):
             x, y = self.rotated_point(0, -76, i * 360 / 12)
             painter.drawText(QRect(x - 10, y - 10, 20, 20), Qt.AlignCenter, "%d" % (hour_nums[i]))
 
-        # Draw the mouse curosor highlight
+        # Draw the mouse cursor highlight
         if self._clock_cursor_pos is not None and self._select_enabled:
             painter.setPen(hlPen)
             painter.drawEllipse(int(self._clock_cursor_pos[0] - 1), int(self._clock_cursor_pos[1] - 1), 2, 2)
@@ -443,13 +466,13 @@ class LibetClock(QWidget):
                 if angle < 0:
                     angle = 360 + angle
 
-                self._selected_time = int((60000.0 * angle) / (self.rotation_per_minute * 360.0))
+                self._selected_time = int((60000.0 * angle) / (self._rotations_per_minute * 360.0))
 
                 # If the clock has been running for more than 1 revolution, add the N revolutions to the selected
                 # time.
-                rotation = self.rotation_per_minute * 360.0 * (self.msecs_elapsed() / 60000.0)
+                rotation = self._rotations_per_minute * 360.0 * (self.msecs_elapsed() / 60000.0)
                 num_revolutions = math.floor(rotation / 360.0)
-                self._selected_time = int(self._selected_time + (60000.0 / self.rotation_per_minute) * num_revolutions)
+                self._selected_time = int(self._selected_time + (60000.0 / self._rotations_per_minute) * num_revolutions)
 
             else:
                 self._selected_time = None

@@ -32,19 +32,60 @@ To run the SpikeRecorder application simply invoke it on the command line
 spike-recorder
 ```
 
+If you want to launch the SpikeRecorder application alongside either of the experiments
+below then invoke them with the `--spike-reord` option. 
+
+## Iowa Gambling Task
+
+![Iowa Task Screenshot](docs/images/iowa_task_screenshot.png?raw=true "Iowa Task Screenshow")
+
 To launch the Iowa Gambling Task Experiment, run:
 
 ```bash
 iowa
 ```
 
-To launch the Libet Task Experiment, run:
+There are some available options and arguments:
+
+```
+usage: iowa [-h] [--spike-record] [--total-deck-pulls TOTAL_DECK_PULLS]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --spike-record        Launch Backyard Brains Spike Recorder in background. Default is do not run.
+  --total-deck-pulls TOTAL_DECK_PULLS
+                        The total number of deck pulls in the experiment. Default is 100.
+
+
+```
+
+## Libet Experiment
+
+![Libet Experiment Screenshot](docs/images/libet_task_screenshot.png?raw=true "Iowa Task Screenshow")
+
+To launch the Libet Task Experiment, simply run:
 
 ```bash
 libet
 ```
 
+If you wish to adjust the speed of the clock or the number of trials in either phase, see the available options:
 
+```
+usage: libet [-h] [--spike-record] [--num-trials-phase1 NUM_TRIALS_PHASE1] [--num-trials-phase2 NUM_TRIALS_PHASE2] [--clock_hz CLOCK_HZ]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --spike-record        Launch Backyard Brains Spike Recorder in background. Default is do not run.
+  --num-trials-phase1 NUM_TRIALS_PHASE1
+                        The number of trials to conduct for phase one. Default is 20.
+  --num-trials-phase2 NUM_TRIALS_PHASE2
+                        The number of trials to conduct for phase two, in which 
+                        time of urge is asked. Default is 20.
+  --clock_hz CLOCK_HZ   The number of full rotations the clock makes per second. 
+                        Default is 1 but can be set lower than 1.
+
+```
 
 
 

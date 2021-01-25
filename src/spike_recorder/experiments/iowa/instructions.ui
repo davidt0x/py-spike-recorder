@@ -47,8 +47,7 @@
     </font>
    </property>
    <property name="text">
-    <string>Subject will make 100 draws from various decks, trying to ascertain the underlying rules and maximize profit. Subjects will report when they have a hunch about deck rules and when they’re “pretty sure” of deck rules.
-</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Subject will make draws from various decks, trying to ascertain the underlying rules and maximize profit. Subjects will report when they have a hunch about deck rules and when they’re “pretty sure” of deck rules. Decks can be controlled by pressing the [1,2,3,4], [a,s,d,w], or [left,down,right,up] arrow keys. The hunch button can pressed with the space or shift key.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="wordWrap">
     <bool>true</bool>
