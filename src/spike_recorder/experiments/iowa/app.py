@@ -7,6 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import Qt
 
 from spike_recorder.experiments.app_runner import run_app
 from spike_recorder.experiments.iowa.instructions_ui import Ui_dialog_instructions
@@ -71,7 +72,7 @@ class WinDialog(QtWidgets.QDialog, Ui_win_message):
     experiement for a bit.
     """
 
-    def __init__(self, parent=None, win_amount=0, loss_amount=0, delay_seconds=3):
+    def __init__(self, parent=None, deck_index=0, win_amount=0, loss_amount=0, delay_seconds=3):
         QtWidgets.QDialog.__init__(self, parent)
         self.setupUi(self)
 
@@ -84,6 +85,8 @@ class WinDialog(QtWidgets.QDialog, Ui_win_message):
         timer = QtCore.QTimer(self)
         timer.timeout.connect(self.update)
         timer.start(1000)
+
+        self.setWindowTitle(f"Deck {deck_index+1} Pull - Winnings and Losses")
 
     def update(self):
         """
@@ -158,7 +161,21 @@ class IowaMainWindow(QtWidgets.QMainWindow, Ui_main_window):
         for button, deck in self.decks.items():
             button.clicked.connect(self.deck_button_pressed)
 
+            # Don't let the buttons get focus so they can't be pressed with the space bar. This allows
+            # us to press then on keyPress events rather than release events.
+            button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
         self.hunch_button.clicked.connect(self.update_hunch)
+        self.hunch_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        # Key presses that map to buttons
+        self.keymap = {
+            **{key: self.deck_button1 for key in [Qt.Key_1, Qt.Key_A, Qt.Key_Left]},
+            **{key: self.deck_button2 for key in [Qt.Key_2, Qt.Key_S, Qt.Key_Down]},
+            **{key: self.deck_button3 for key in [Qt.Key_3, Qt.Key_D, Qt.Key_Right]},
+            **{key: self.deck_button4 for key in [Qt.Key_4, Qt.Key_W, Qt.Key_Up]},
+            **{key: self.hunch_button for key in [Qt.Key_Space, Qt.Key_Shift]},
+        }
 
         # Update the status
         self.update_status()
@@ -217,7 +234,9 @@ class IowaMainWindow(QtWidgets.QMainWindow, Ui_main_window):
             logger.warning("Output filename is not definied, results are not being saved.")
 
         if self.DELAY_SECS and self.DELAY_SECS > 0:
-            win_diag = WinDialog(parent=self, win_amount=win_amount, loss_amount=loss_amount, delay_seconds=self.DELAY_SECS)
+            win_diag = WinDialog(parent=self, win_amount=win_amount, loss_amount=loss_amount,
+                                 deck_index=deck_index,
+                                 delay_seconds=self.DELAY_SECS)
             win_diag.exec_()
 
         if self.get_num_pulls() >= self.total_deck_pulls:
@@ -290,6 +309,25 @@ class IowaMainWindow(QtWidgets.QMainWindow, Ui_main_window):
             self.record_client.shutdown()
 
         sys.exit(0)
+
+    def keyPressEvent(self, event):
+        """
+        Decks can be controlled by pressing the [1,2,3,4], [a,s,d,w], or
+        [left,down,right,up] arrow keys. The hunch button can pressed with
+        the space or shift key.
+
+        Args:
+            event: The keyboard press event.
+
+        Returns:
+            None
+        """
+
+        if event.key() in self.keymap:
+            button = self.keymap[event.key()]
+            button.animateClick()
+
+        event.accept()
 
 
 def main():
