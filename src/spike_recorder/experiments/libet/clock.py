@@ -134,7 +134,7 @@ class LibetClock(QWidget):
     def __init__(self, parent=None, showFrame=False, windowSize=None):
         super(LibetClock, self).__init__(parent)
 
-        self.rotation_per_minute = 5.0
+        self._rotations_per_minute = 5.0
 
         self._clock_cursor_pos = None
         self._clock_selection = None
@@ -203,6 +203,29 @@ class LibetClock(QWidget):
         """
 
         return self._selected_time
+
+    @property
+    def rotations_per_minute(self) -> float:
+        """
+        The number of rotations the clock should make per minute.
+
+        Returns:
+            The rotations per minute.
+        """
+        return self._rotations_per_minute
+
+    @rotations_per_minute.setter
+    def rotations_per_minute(self, value: float):
+        """
+        Set the number of rotations the clock should make per minute.
+
+        Args:
+            value: The number of rotations the clock should make per minute.
+
+        Returns:
+            None
+        """
+        self._rotations_per_minute = float(value)
 
     @property
     def select_enabled(self) -> bool:
@@ -297,7 +320,7 @@ class LibetClock(QWidget):
             self._start_time = QDateTime.currentDateTime().time()
 
         # Compute the hand rotation based on the elapsed milliseconds
-        rotation = math.fmod(self.rotation_per_minute * 360.0 * (self.msecs_elapsed() / 60000.0), 360.0)
+        rotation = math.fmod(self._rotations_per_minute * 360.0 * (self.msecs_elapsed() / 60000.0), 360.0)
 
         # Start all the drawing.
         handColor = self.handColor
@@ -443,13 +466,13 @@ class LibetClock(QWidget):
                 if angle < 0:
                     angle = 360 + angle
 
-                self._selected_time = int((60000.0 * angle) / (self.rotation_per_minute * 360.0))
+                self._selected_time = int((60000.0 * angle) / (self._rotations_per_minute * 360.0))
 
                 # If the clock has been running for more than 1 revolution, add the N revolutions to the selected
                 # time.
-                rotation = self.rotation_per_minute * 360.0 * (self.msecs_elapsed() / 60000.0)
+                rotation = self._rotations_per_minute * 360.0 * (self.msecs_elapsed() / 60000.0)
                 num_revolutions = math.floor(rotation / 360.0)
-                self._selected_time = int(self._selected_time + (60000.0 / self.rotation_per_minute) * num_revolutions)
+                self._selected_time = int(self._selected_time + (60000.0 / self._rotations_per_minute) * num_revolutions)
 
             else:
                 self._selected_time = None

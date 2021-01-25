@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
 
-import sys
 import os
+import argparse
+import sys
+
 import logging
+logger = logging.getLogger(__name__)
 
-import pandas as pd
+from PyQt5 import QtWidgets
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-
+from spike_recorder.experiments.app_runner import run_app
 from spike_recorder.experiments.libet.libet_ui import Ui_Libet
 from spike_recorder.experiments.libet.instructions_ui import Ui_dialog_instructions
 from spike_recorder.experiments.libet.data import LibetData
+from spike_recorder.client import SpikeRecorder
 
 
 # It seems I need to add this to get trace backs to show up on
@@ -18,6 +21,7 @@ from spike_recorder.experiments.libet.data import LibetData
 def catch_exceptions(t, val, tb):
     old_hook(t, val, tb)
     sys.exit(-1)
+
 
 old_hook = sys.excepthook
 sys.excepthook = catch_exceptions
@@ -42,15 +46,14 @@ class IntroDialog(QtWidgets.QDialog, Ui_dialog_instructions):
 
         self.textbox_file.setText(filename)
 
-
     def reject(self):
         """
-        If the user clicks cancel, we can't proceeed, exit the app.
+        If the user clicks cancel, we can't proceed, exit the app.
 
         Returns:
             None
         """
-        sys.exit(0)
+        self.parent().close()
 
     def get_directory(self):
         dialog = QtWidgets.QFileDialog()
@@ -64,14 +67,18 @@ class IntroDialog(QtWidgets.QDialog, Ui_dialog_instructions):
 
 class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
     """
-    The main application class for the Libet experiement.
+    The main application class for the Libet experiment.
     """
 
-    NUM_PRACTICE_TRIALS = 20
-    NUM_URGE_TRIALS = 20
+    def __init__(self, spike_record: bool = False, clock_hz: float = 1.0,
+                 num_trials_phase1: int = 20, num_trials_phase2: int = 20):
 
-    def __init__(self, *args, **kwargs):
-        QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
+        self.spike_record = spike_record
+        self.clock_hz = clock_hz
+        self.num_trials_phase1 = num_trials_phase1
+        self.num_trials_phase2 = num_trials_phase2
+
+        QtWidgets.QMainWindow.__init__(self)
         self.setupUi(self)
 
         # adding action to a buttons
@@ -87,6 +94,17 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
 
         self.clock_widget.selectChange.connect(self.on_clock_select_change)
 
+        # Set the clock speed.
+        self.clock_widget.rotations_per_minute = self.clock_hz * 60.0
+
+        # Launch the spike recorder if needed
+        if self.spike_record:
+            self.record_client = SpikeRecorder()
+            self.record_client.launch()
+            self.record_client.connect()
+
+        # Move the window over a bit to make room for the SpikeRecorder app
+        self.move(10, 10)
 
     def update_status(self):
         """
@@ -134,15 +152,14 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
 
         # Check if we have finished our first set of trials, if so, now we need to enter
         # the secondary mode where we ask for the urge time
-        if (self.data.num_trials+1) == self.NUM_PRACTICE_TRIALS:
+        if (self.data.num_trials+1) == self.num_trials_phase1:
             self.urge_mode = True
             self.clock_widget.select_enabled = True
 
             QtWidgets.QMessageBox.about(self, "Instructions - Part 2",
-                                        f"For the next {self.NUM_URGE_TRIALS} trials, stop the clock whenever you "
+                                        f"For the next {self.num_trials_phase2} trials, stop the clock whenever you "
                                         f"like. After each trial, click the time on the clock when you first felt the "
                                         f"urge to stop the clock. ")
-
 
     def next_trial_click(self):
         """
@@ -153,8 +170,11 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
         """
 
         if not self.clock_widget.clock_stopped:
+            self.record_event_marker(f"Trial {self.data.num_trials}: Stop")
             self.stop_trial()
         else:
+
+            self.record_event_marker(f"Trial {self.data.num_trials}: Next")
 
             # Store the trial's data, unless the clock hasn't been started.
             if self.clock_widget.msecs_elapsed() > 0:
@@ -166,9 +186,25 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
                 if self.output_filename is not None:
                     self.data.to_csv(self.output_filename)
                 else:
-                    logging.warning("Output filename is not definied, results are not being saved.")
+                    logging.warning("Output filename is not defined, results are not being saved.")
+
+            # If we have enough data then we are done!
+            if self.data.num_trials == (self.num_trials_phase1 + self.num_trials_phase2):
+
+                if self.spike_record:
+                    self.record_client.stop_record()
+
+                msg = QtWidgets.QMessageBox(parent=self)
+                msg.setText("Experiment Complete!")
+                msg.setWindowTitle("Done")
+                msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+                msg.exec_()
+
+                self.close()
 
             self.restart_trial()
+
+
 
     def retry_trial_click(self):
         """
@@ -177,6 +213,7 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
         Returns:
             None
         """
+        self.record_event_marker(f"Trial {self.data.num_trials}: Retry")
         self.restart_trial()
 
     def on_clock_select_change(self):
@@ -195,55 +232,49 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
                 # Don't turn of the next\stop button unless the clock is stopped!
                 self.button_next.setEnabled(False)
 
+    def closeEvent(self, event):
+        if self.spike_record:
+            self.record_client.shutdown()
+
+        sys.exit(0)
+
+    def record_event_marker(self, marker: str):
+        """
+        A little helper function to push event markers to the Spike Recorder app if it is
+        running.
+
+        Args:
+            marker: The text for the marker.
+
+        Returns:
+            None
+        """
+        if self.spike_record:
+            self.record_client.push_event_marker(marker)
+
 
 def main():
-    import sys
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--spike-record', action='store_true',
+                        default=False,
+                        help='Launch Backyard Brains Spike Recorder in background. Default is do not run.')
+    parser.add_argument("--num-trials-phase1", type=int, default=20,
+                         help="The number of trials to conduct for phase one. Default is 20.")
+    parser.add_argument("--num-trials-phase2", type=int, default=20,
+    help="The number of trials to conduct for phase two, in which time of urge is asked. Default is 20.")
+    parser.add_argument('--clock_hz', type=float, default=1.0,
+                        help='The number of full rotations the clock makes per second. Default is 1 but can '
+                             'be set lower than 1.')
+
+    args = parser.parse_args()
+
     app = QtWidgets.QApplication(sys.argv)
-    ui = LibetMainWindow(None)
-    ui.showNormal()
-
-    # Show the instructions and ask for an output file name. Do some error
-    # checking if the file isn't valid.
-    fileNoGood = True
-    while fileNoGood:
-        # Try to open the output file for writing
-        try:
-            intro_d = IntroDialog()
-            intro_d.show()
-            intro_d.textbox_file.setFocus()
-            intro_d.exec_()
-
-            # Grab the filename from the textbox
-            filename = intro_d.textbox_file.text()
-
-            # Check if the file exists already, make sure they want to overwrite?
-            if os.path.isfile(filename):
-                qm = QtWidgets.QMessageBox
-                retval = qm.question(intro_d, "", "This file already exists. "
-                                                  "Are you sure you want it to be overwritten?",
-                                     qm.Yes | qm.No)
-
-                if retval == qm.No:
-                    continue
-
-            # Check if we can open the file. If so, set the output file on the main app
-            # and we are ready to go!
-            with open(filename, 'w') as f:
-                fileNoGood = False
-                ui.output_filename = intro_d.textbox_file.text()
-
-        except Exception as ex:
-            msg = QtWidgets.QMessageBox()
-            msg.setIcon(QtWidgets.QMessageBox.Critical)
-            msg.setText("Output file could not be opened. Check the path.")
-            msg.setDetailedText(f"{ex}")
-            msg.setWindowTitle("Output File Error")
-            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-            msg.exec_()
-
-    # Run the main app
-    sys.exit(app.exec_())
+    ui = LibetMainWindow(**vars(args))
+    intro_d = IntroDialog(parent=ui)
+    run_app(app=app, ui=ui, intro_d=intro_d)
 
 
 if __name__ == "__main__":
     main()
+
