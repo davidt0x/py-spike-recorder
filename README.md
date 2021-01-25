@@ -80,8 +80,10 @@ optional arguments:
   --num-trials-phase1 NUM_TRIALS_PHASE1
                         The number of trials to conduct for phase one. Default is 20.
   --num-trials-phase2 NUM_TRIALS_PHASE2
-                        The number of trials to conduct for phase two, in which time of urge is asked. Default is 20.
-  --clock_hz CLOCK_HZ   The number of full rotations the clock makes per second. Default is 1 but can be set lower than 1.
+                        The number of trials to conduct for phase two, in which 
+                        time of urge is asked. Default is 20.
+  --clock_hz CLOCK_HZ   The number of full rotations the clock makes per second. 
+                        Default is 1 but can be set lower than 1.
 
 ```
 
