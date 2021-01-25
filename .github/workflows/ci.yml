@@ -59,11 +59,9 @@ jobs:
       run: |
         python -m pip install scikit-build
         echo "CMAKE_BUILD_DIR=$(python -c "from skbuild.constants import CMAKE_BUILD_DIR; print(CMAKE_BUILD_DIR())")" >> $GITHUB_ENV
+        echo $CMAKE_BUILD_DIR
         python -m pip uninstall scikit-build -y
       shell: bash
-
-    - name: Check Sci-kit build cmake dir
-      run: echo {{ env.CMAKE_BUILD_DIR }}
 
     # Install OS specific dependencies for some of our dependencies.
     # Currently, this is libusb on linux for hidapi.
