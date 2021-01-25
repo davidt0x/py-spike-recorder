@@ -33,7 +33,7 @@ spike-recorder
 ```
 
 If you want to launch the SpikeRecorder application alongside either of the experiments
-below then pass the invoke them with the `--spike-reord` option. 
+below then invoke them with the `--spike-reord` option. 
 
 ## Iowa Gambling Task
 
