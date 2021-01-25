@@ -160,24 +160,6 @@
       <property name="bottomMargin">
        <number>50</number>
       </property>
-      <item row="0" column="1">
-       <widget class="QPushButton" name="deck_button2">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>72</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>2</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="0">
        <widget class="QPushButton" name="deck_button1">
         <property name="sizePolicy">
@@ -196,8 +178,8 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QPushButton" name="deck_button4">
+      <item row="0" column="1">
+       <widget class="QPushButton" name="deck_button2">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -210,7 +192,7 @@
          </font>
         </property>
         <property name="text">
-         <string>4</string>
+         <string>2</string>
         </property>
        </widget>
       </item>
@@ -232,19 +214,43 @@
         </property>
        </widget>
       </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="deck_button4">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>72</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>4</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="QPushButton" name="hunch_button">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>14</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>I  have a hunch!</string>
+        </property>
+       </widget>
+      </item>
      </layout>
-    </item>
-    <item>
-     <widget class="QPushButton" name="hunch_button">
-      <property name="font">
-       <font>
-        <pointsize>14</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>I  have a hunch!</string>
-      </property>
-     </widget>
     </item>
    </layout>
   </widget>
