@@ -174,12 +174,12 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
             self.stop_trial()
         else:
 
-            self.record_event_marker(f"Trial {self.data.num_trials}: Next")
-
             # Store the trial's data, unless the clock hasn't been started.
             if self.clock_widget.msecs_elapsed() > 0:
                 self.data.add_trial(stop_time_msecs=self.clock_widget.msecs_elapsed(),
                                     urge_time_msecs=self.clock_widget.selected_time)
+
+                self.record_event_marker(f"Trial {self.data.num_trials}: Next")
 
                 # Dump the data back out to file. We will just dump everything back out over and over again
                 # so that if the user stops half way through, they have part of their data.
@@ -187,6 +187,8 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
                     self.data.to_csv(self.output_filename)
                 else:
                     logging.warning("Output filename is not defined, results are not being saved.")
+            else:
+                self.record_event_marker(f"Trial {self.data.num_trials}: Next")
 
             # If we have enough data then we are done!
             if self.data.num_trials == (self.num_trials_phase1 + self.num_trials_phase2):
