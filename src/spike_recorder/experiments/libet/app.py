@@ -111,7 +111,6 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
         # Move the window over a bit to make room for the SpikeRecorder app
         self.move(10, 10)
 
-
     def update_status(self):
         """
         Update any status fields with the current state of the experiment.
@@ -119,7 +118,12 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
         Returns:
             None
         """
-        self.label_status.setText(f"Trial: {self.data.num_trials+1}")
+        trial_txt = f"Trial: {self.data.num_trials+1}"
+
+        if self.clock_widget.select_enabled:
+            self.label_status.setText(f"{trial_txt} - Click the time you felt the urge.")
+        else:
+            self.label_status.setText(trial_txt)
 
     def restart_trial(self):
         """
@@ -155,6 +159,7 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
         if self.urge_mode:
             self.button_next.setEnabled(False)
             self.clock_widget.select_enabled = True
+            self.update_status()
 
         # Check if we have finished our first set of trials, if so, now we need to enter
         # the secondary mode where we ask for the urge time
@@ -211,8 +216,6 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
                 self.close()
 
             self.restart_trial()
-
-
 
     def retry_trial_click(self):
         """
