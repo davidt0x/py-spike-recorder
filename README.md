@@ -47,7 +47,7 @@ iowa
 
 There are some available options and arguments:
 
-```bash
+```
 usage: iowa [-h] [--spike-record] [--total-deck-pulls TOTAL_DECK_PULLS]
 
 optional arguments:
