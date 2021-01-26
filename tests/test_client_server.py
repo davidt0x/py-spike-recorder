@@ -1,4 +1,5 @@
 import time
+import os
 import pytest
 
 from spike_recorder.client import SpikeRecorder
@@ -9,7 +10,7 @@ def test_client(tmp_path):
     """
     Integrated test of SpikeRecorder client server
 
-        - Lauchs server application.
+        - Launches server application.
         - Connects
         - Starts a recording
         - Sends some event markers
@@ -45,8 +46,8 @@ def test_client(tmp_path):
     time.sleep(3)
 
     # Make sure the recording session WAV and events txt is there.
-    #assert os.path.isfile(wav_file_name)
-    #assert os.path.isfile(event_file_name)
+    assert os.path.isfile(wav_file_name)
+    assert os.path.isfile(event_file_name)
 
     # Shutdown
     recorder_client.shutdown()
