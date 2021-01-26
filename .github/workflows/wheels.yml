@@ -104,7 +104,7 @@ jobs:
         # recreate the right content the key must be changed as well, and it must be brand new
         # (i.e. not existing already).
         key: |
-          ${{ hashFiles( 'vcpkg_manifest/vcpkg.json' ) }}-${{ hashFiles( '.git/modules/vcpkg/HEAD' )}}-${{ matrix.triplet }}-v10
+          ${{ hashFiles( 'vcpkg.json' ) }}-${{ hashFiles( '.git/modules/extern/Spike-Recorder/modules/vcpkg' )}}-${{ matrix.triplet }}-v10
 
     # On Windows runners, let's ensure to have the Developer Command Prompt environment setup correctly.
     # As used here the Developer Command Prompt created is targeting x64 and using the default Windows SDK.
