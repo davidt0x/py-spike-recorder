@@ -275,11 +275,11 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
         """
 
         # If the space bar has been pressed and this isn't an auto repeat, to avoid multiple presses if held down.
-        if event.key() == QtCore.Qt.Key_Space and not event.isAutoRepeat():
+        if event.key() == QtCore.Qt.Key_Space and not event.isAutoRepeat() and self.button_next.isEnabled():
             self.next_trial_click()
 
         # If the space bar has been pressed and this isn't an auto repeat, to avoid multiple presses if held down.
-        if event.key() == QtCore.Qt.Key_R and not event.isAutoRepeat():
+        if event.key() == QtCore.Qt.Key_R and not event.isAutoRepeat() and self.button_retry.isEnabled():
             self.retry_trial_click()
 
         event.accept()
