@@ -104,7 +104,7 @@ jobs:
         # recreate the right content the key must be changed as well, and it must be brand new
         # (i.e. not existing already).
         key: |
-          ${{ hashFiles( 'vcpkg.json' ) }}-${{ matrix.triplet }}-v11
+          ${{ hashFiles( 'vcpkg.json' ) }}-${{ matrix.triplet }}-v12
 
     # On Windows runners, let's ensure to have the Developer Command Prompt environment setup correctly.
     # As used here the Developer Command Prompt created is targeting x64 and using the default Windows SDK.
