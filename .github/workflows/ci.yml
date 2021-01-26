@@ -8,7 +8,6 @@ on:
     - master
     - main
     - develop
-    - server_side
   release:
     types:
       - published
@@ -73,6 +72,25 @@ jobs:
           sudo apt-get -y install autotools-dev autoconf automake libtool
         fi
       shell: bash
+
+    # This step sets up a virtual audio device on windows
+    # Credit: https://github.com/actions/virtual-environments/issues/2528
+    - name: Setup virtual audio device
+      shell: powershell
+      run: |
+        Get-CimInstance Win32_SoundDevice | fl *
+        Start-Service audio*
+        Invoke-WebRequest https://github.com/duncanthrax/scream/releases/download/3.6/Scream3.6.zip -OutFile C:\Scream3.6.zip
+        Extract-7Zip -Path C:\Scream3.6.zip -DestinationPath C:\Scream
+        $cert = (Get-AuthenticodeSignature C:\Scream\Install\driver\Scream.sys).SignerCertificate
+        $store = [System.Security.Cryptography.X509Certificates.X509Store]::new("TrustedPublisher", "LocalMachine")
+        $store.Open("ReadWrite")
+        $store.Add($cert)
+        $store.Close()
+        cd C:\Scream\Install\driver
+        C:\Scream\Install\helpers\devcon install Scream.inf *Scream
+        Get-CimInstance Win32_SoundDevice | fl *
+      if: matrix.os == 'windows-latest'
 
     # Restore both vcpkg and its artifacts from the GitHub cache service.
     - name: Restore vcpkg and its artifacts.
