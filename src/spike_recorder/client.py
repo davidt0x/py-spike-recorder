@@ -231,17 +231,17 @@ class SpikeRecorder:
 
             if block:
 
-                    # Get the reply.
-                    reply_str = self.socket.recv()
+                # Get the reply.
+                reply_str = self.socket.recv()
 
-                    # Remove the null terminator
-                    reply_str = reply_str[0:len(reply_str)-1]
+                # Remove the null terminator
+                reply_str = reply_str[0:len(reply_str)-1]
 
-                    reply = CommandMsg.from_json(reply_str)
-                    logger.info(f"Received: {reply}")
+                reply = CommandMsg.from_json(reply_str)
+                logger.info(f"Received: {reply}")
 
-                    if reply.type == CommandType.REPLY_ERROR:
-                        raise Exception(f"Spike-Recorder Application Command Error: \n{reply}")
+                if reply.type == CommandType.REPLY_ERROR:
+                    raise Exception(f"Spike-Recorder Application Command Error: \n{reply}")
 
         except (zmq.error.Again, zmq.error.ZMQError) as ex:
             logger.error("Warning: Failed to communicate with Spike-Recorder application. No spike recording is occurring.")
