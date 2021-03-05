@@ -13,6 +13,12 @@ logger = logging.getLogger(__name__)
 import spike_recorder.server
 import os
 
+
+class SpikeRecorderUnavailable(Exception):
+    """This exception is raised whenever we cannot reach the SpikeRecorder"""
+    pass
+
+
 @unique
 class CommandType(Enum):
     """
@@ -218,19 +224,25 @@ class SpikeRecorder:
             The CommandMsg we received back as a reply
         """
 
-        logger.info(f"Sending: {command}")
-        self.socket.send(command.to_json().encode())
+        try:
 
-        if block:
+            logger.info(f"Sending: {command}")
+            self.socket.send(command.to_json().encode())
 
-            # Get the reply.
-            reply_str = self.socket.recv()
+            if block:
 
-            # Remove the null terminator
-            reply_str = reply_str[0:len(reply_str)-1]
+                    # Get the reply.
+                    reply_str = self.socket.recv()
 
-            reply = CommandMsg.from_json(reply_str)
-            logger.info(f"Received: {reply}")
+                    # Remove the null terminator
+                    reply_str = reply_str[0:len(reply_str)-1]
 
-            if reply.type == CommandType.REPLY_ERROR:
-                raise Exception(f"Spike-Recorder Application Command Error: \n{reply}")
+                    reply = CommandMsg.from_json(reply_str)
+                    logger.info(f"Received: {reply}")
+
+                    if reply.type == CommandType.REPLY_ERROR:
+                        raise Exception(f"Spike-Recorder Application Command Error: \n{reply}")
+
+        except (zmq.error.Again, zmq.error.ZMQError) as ex:
+            logger.error("Warning: Failed to communicate with Spike-Recorder application. No spike recording is occurring.")
+            raise SpikeRecorderUnavailable() from ex
