@@ -27,8 +27,8 @@ def test_client(tmp_path):
     recorder_client.launch()
     recorder_client.connect()
 
-    # Give things time to show up
-    time.sleep(5)
+    # Give things time to show up, takes a decent time on mac
+    time.sleep(10)
 
     # Start a recording
     recorder_client.start_record(wav_file_name)
