@@ -7,6 +7,7 @@ import multiprocessing
 from multiprocessing import Process, Queue
 
 from ._core import __doc__, run
+from ._core import __file__ as module_file_path
 
 
 # Fix for MacOS High Sierra, see:
@@ -21,7 +22,8 @@ def _run_wrapper():
     needs to run from its location directory because it looks for files.
     """
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    run()
+    log_file_path = os.path.join(os.path.dirname(module_file_path), 'byb.log')
+    run(log_file_path)
 
 
 def launch(is_async: bool = False) -> multiprocessing.Process:

@@ -21,13 +21,24 @@
 
 namespace py = pybind11;
 
-int run()
+std::string getModulePath()
+{
+  py::gil_scoped_acquire acquire;
+  py::object example = py::module::import("example");
+  return example.attr("__file__").cast<std::string>();
+}
+
+int run(const std::string & log_file_path)
 {
     pybind11::gil_scoped_release release;
 
 	time_t t;
 	time(&t);
-	BackyardBrains::Log::msg("BYB SpieRecorder started on %s", ctime(&t));
+
+	if(!log_file_path.empty())
+    	BackyardBrains::Log::init(log_file_path.c_str());
+
+	BackyardBrains::Log::msg("BYB SpiKeRecorder started on %s", ctime(&t));
 
 	BackyardBrains::Game game;
 
@@ -55,6 +66,10 @@ PYBIND11_MODULE(_core, m) {
 
     m.def("run", &run, R"pbdoc(
         Run the SpikeRecorder application. This launches the complete recording GUI.
+
+        Args:
+            log_file_path: Optional full path for where to place log file. If not specified
+                then do what Spike-Recorder do.
 
     )pbdoc");
 
