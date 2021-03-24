@@ -245,6 +245,13 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
 
     def closeEvent(self, event):
         if self.spike_record:
+
+            self.record_client.stop_record()
+
+            # Add a bit of sleep to let things shutdown on the server side
+            import time
+            time.sleep(1.0)
+
             self.record_client.shutdown()
 
         sys.exit(0)
