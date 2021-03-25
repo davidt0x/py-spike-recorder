@@ -27,7 +27,7 @@ def run_app(app, ui, intro_d):
                 qm = QtWidgets.QMessageBox
                 retval = qm.question(intro_d, "", "This file already exists. "
                                                   "Are you sure you want it to be overwritten?",
-                                     qm.Yes | qm.No, parent=ui)
+                                     qm.Yes | qm.No)
 
                 if retval == qm.No:
                     continue
