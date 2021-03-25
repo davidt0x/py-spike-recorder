@@ -167,10 +167,8 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
             self.urge_mode = True
             self.clock_widget.select_enabled = True
 
-            QtWidgets.QMessageBox.about(self, "Instructions - Part 2",
-                                        f"For the next {self.num_trials_phase2} trials, stop the clock whenever you "
-                                        f"like. After each trial, click the time on the clock when you first felt the "
-                                        f"urge to stop the clock. ")
+            QtWidgets.QMessageBox.about(self, "Instructions - Paradigm 2",
+                                        f"Paradigm 2")
 
     def next_trial_click(self):
         """

@@ -14,22 +14,23 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_dialog_instructions(object):
     def setupUi(self, dialog_instructions):
         dialog_instructions.setObjectName("dialog_instructions")
-        dialog_instructions.resize(523, 229)
+        dialog_instructions.resize(523, 128)
         dialog_instructions.setModal(True)
         self.buttonBox = QtWidgets.QDialogButtonBox(dialog_instructions)
-        self.buttonBox.setGeometry(QtCore.QRect(160, 180, 341, 32))
+        self.buttonBox.setGeometry(QtCore.QRect(160, 81, 341, 32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
         self.label_2 = QtWidgets.QLabel(dialog_instructions)
-        self.label_2.setGeometry(QtCore.QRect(20, 10, 461, 71))
+        self.label_2.setGeometry(QtCore.QRect(10, 10, 471, 31))
         font = QtGui.QFont()
         font.setPointSize(10)
         self.label_2.setFont(font)
+        self.label_2.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.label_2.setWordWrap(True)
         self.label_2.setObjectName("label_2")
         self.horizontalLayoutWidget = QtWidgets.QWidget(dialog_instructions)
-        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(10, 100, 491, 80))
+        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(10, 40, 491, 41))
         self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
@@ -51,7 +52,7 @@ class Ui_dialog_instructions(object):
 
     def retranslateUi(self, dialog_instructions):
         _translate = QtCore.QCoreApplication.translate
-        dialog_instructions.setWindowTitle(_translate("dialog_instructions", "Instructions"))
-        self.label_2.setText(_translate("dialog_instructions", "<html><head/><body><p>For the first twenty trials, Wait till the clock hand makes one complete revolution. Attempt to stop the hand at the 12 position. The clock can be started and stopped by pressing the spacebar on your keyboard. Press the R key if you would like to retry the trial. </p></body></html>"))
+        dialog_instructions.setWindowTitle(_translate("dialog_instructions", "Instructions - Paradigm 1"))
+        self.label_2.setText(_translate("dialog_instructions", "<html><head/><body><p>Paradigm 1</p></body></html>"))
         self.label.setText(_translate("dialog_instructions", "Output File:"))
         self.button_browse.setText(_translate("dialog_instructions", "..."))
