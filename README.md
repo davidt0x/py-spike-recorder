@@ -72,17 +72,22 @@ libet
 If you wish to adjust the speed of the clock or the number of trials in either phase, see the available options:
 
 ```
-usage: libet [-h] [--spike-record] [--num-trials-phase1 NUM_TRIALS_PHASE1] [--num-trials-phase2 NUM_TRIALS_PHASE2] [--clock_hz CLOCK_HZ]
+usage: libet [-h] [--spike-record] [--num-trials-paradigm1 NUM_TRIALS_PARADIGM1] [--num-trials-paradigm2 NUM_TRIALS_PARADIGM2] [--clock-hz-paradigm1 CLOCK_HZ_PARADIGM1] [--clock-hz-paradigm2 CLOCK_HZ_PARADIGM2]
 
 optional arguments:
   -h, --help            show this help message and exit
-  --spike-record        Launch Backyard Brains Spike Recorder in background. Default is do not run.
-  --num-trials-phase1 NUM_TRIALS_PHASE1
-                        The number of trials to conduct for phase one. Default is 20.
-  --num-trials-phase2 NUM_TRIALS_PHASE2
-                        The number of trials to conduct for phase two, in which 
-                        time of urge is asked. Default is 20.
-  --clock_hz CLOCK_HZ   The number of full rotations the clock makes per second. 
+  --spike-record        Launch Backyard Brains Spike Recorder in background. 
+                        Default is do not run.
+  --num-trials-paradigm1 NUM_TRIALS_PARADIGM1
+                        The number of trials to conduct for paradigm one. Default is 20.
+  --num-trials-paradigm2 NUM_TRIALS_PARADIGM2
+                        The number of trials to conduct for paradigm two, 
+                        in which time of urge is asked. Default is 20.
+  --clock-hz-paradigm1 CLOCK_HZ_PARADIGM1
+                        The number of full rotations the clock makes per second in paradigm one. 
+                        Default is 1 but can be set lower than 1.
+  --clock-hz-paradigm2 CLOCK_HZ_PARADIGM2
+                        The number of full rotations the clock makes per second in paradigm two. 
                         Default is 1 but can be set lower than 1.
 
 ```

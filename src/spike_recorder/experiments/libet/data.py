@@ -2,6 +2,7 @@ import pandas as pd
 import attr
 import typing
 import math
+import os
 
 @attr.s(auto_attribs=True)
 class LibetRecord:
@@ -24,8 +25,9 @@ class LibetData:
     A simple class to encapsulate the trial by trial data stored during the Libet experiment.
     """
 
-    def __init__(self):
+    def __init__(self, comment_kwargs = None):
         self.data = []
+        self.comment_kwargs = comment_kwargs
         self.trial_idx = 0
 
     def add_trial(self, stop_time_msecs: int, urge_time_msecs: typing.Optional[int] = None):
@@ -75,8 +77,12 @@ class LibetData:
         Returns:
             None
         """
+        os.remove(filename)
+        with open(filename, 'w') as f:
+            for key, value in self.comment_kwargs.items():
+                f.write(f'# {key} = {value}\n')
         df = pd.DataFrame([attr.asdict(d) for d in self.data])
-        df.to_csv(filename, index=False)
+        df.to_csv(filename, index=False, mode='a')
 
 
 

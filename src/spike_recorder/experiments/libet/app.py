@@ -70,13 +70,15 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
     The main application class for the Libet experiment.
     """
 
-    def __init__(self, spike_record: bool = False, clock_hz: float = 1.0,
-                 num_trials_phase1: int = 20, num_trials_phase2: int = 20):
+    def __init__(self, spike_record: bool = False,
+                 clock_hz_paradigm1: float = 1.0, clock_hz_paradigm2: float = 1.0,
+                 num_trials_paradigm1: int = 20, num_trials_paradigm2: int = 20):
 
         self.spike_record = spike_record
-        self.clock_hz = clock_hz
-        self.num_trials_phase1 = num_trials_phase1
-        self.num_trials_phase2 = num_trials_phase2
+        self.clock_hz_paradigm1 = clock_hz_paradigm1
+        self.clock_hz_paradigm2 = clock_hz_paradigm2
+        self.num_trials_paradigm1 = num_trials_paradigm1
+        self.num_trials_paradigm2 = num_trials_paradigm2
 
         QtWidgets.QMainWindow.__init__(self)
         self.setupUi(self)
@@ -90,7 +92,8 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
         self.button_next.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
         self.button_retry.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
 
-        self.data = LibetData()
+        self.data = LibetData(comment_kwargs={'clock_hz_paradigm1': clock_hz_paradigm1,
+                                              'clock_hz_paradigm2': clock_hz_paradigm2})
 
         self.output_filename = None
 
@@ -99,8 +102,8 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
 
         self.clock_widget.selectChange.connect(self.on_clock_select_change)
 
-        # Set the clock speed.
-        self.clock_widget.rotations_per_minute = self.clock_hz * 60.0
+        # Set the clock speed for paradigm1
+        self.clock_widget.rotations_per_minute = self.clock_hz_paradigm1 * 60.0
 
         # Launch the spike recorder if needed
         if self.spike_record:
@@ -163,9 +166,10 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
 
         # Check if we have finished our first set of trials, if so, now we need to enter
         # the secondary mode where we ask for the urge time
-        if (self.data.num_trials+1) == self.num_trials_phase1:
+        if (self.data.num_trials+1) == self.num_trials_paradigm1:
             self.urge_mode = True
             self.clock_widget.select_enabled = True
+            self.clock_widget.rotations_per_minute = self.clock_hz_paradigm2 * 60.0
 
             QtWidgets.QMessageBox.about(self, "Instructions - Paradigm 2",
                                         f"Paradigm 2")
@@ -200,7 +204,7 @@ class LibetMainWindow(QtWidgets.QMainWindow, Ui_Libet):
                 self.record_event_marker(f"Trial {self.data.num_trials}: Next")
 
             # If we have enough data then we are done!
-            if self.data.num_trials == (self.num_trials_phase1 + self.num_trials_phase2):
+            if self.data.num_trials == (self.num_trials_paradigm1 + self.num_trials_paradigm2):
 
                 if self.spike_record:
                     self.record_client.stop_record()
@@ -296,13 +300,17 @@ def main():
     parser.add_argument('--spike-record', action='store_true',
                         default=False,
                         help='Launch Backyard Brains Spike Recorder in background. Default is do not run.')
-    parser.add_argument("--num-trials-phase1", type=int, default=20,
-                         help="The number of trials to conduct for phase one. Default is 20.")
-    parser.add_argument("--num-trials-phase2", type=int, default=20,
-    help="The number of trials to conduct for phase two, in which time of urge is asked. Default is 20.")
-    parser.add_argument('--clock_hz', type=float, default=1.0,
-                        help='The number of full rotations the clock makes per second. Default is 1 but can '
-                             'be set lower than 1.')
+    parser.add_argument("--num-trials-paradigm1", type=int, default=20,
+                         help="The number of trials to conduct for paradigm one. Default is 20.")
+    parser.add_argument("--num-trials-paradigm2", type=int, default=20,
+                        help="The number of trials to conduct for paradigm two, in which time of urge is asked. "
+                             "Default is 20.")
+    parser.add_argument('--clock-hz-paradigm1', type=float, default=1.0,
+                        help='The number of full rotations the clock makes per second in paradigm one. Default is 1 '
+                             'but can be set lower than 1.')
+    parser.add_argument('--clock-hz-paradigm2', type=float, default=1.0,
+                        help='The number of full rotations the clock makes per second in paradigm two. Default is 1 '
+                             'but can be set lower than 1.')
 
     args = parser.parse_args()
 
