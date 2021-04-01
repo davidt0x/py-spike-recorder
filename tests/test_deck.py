@@ -44,7 +44,10 @@ def test_deck_reshuffle():
     pulls1 = [deck1.pull() for i in range(10)]
     pulls2 = [deck1.pull() for i in range(10)]
 
+    # Make sure shuffling is happening
     assert pulls1 != pulls2
+
+    # Make sure we see all win and loss amounts between shuffles.
     assert set([win for win, loss in pulls1]) == set([win_amounts])
     assert set([loss for win, loss in pulls1]) == set(loss_amounts)
 
