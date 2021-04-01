@@ -6,6 +6,8 @@ import time
 import logging
 logger = logging.getLogger(__name__)
 
+from typing import Optional
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 
@@ -109,7 +111,7 @@ class IowaMainWindow(QtWidgets.QMainWindow, Ui_main_window):
     # How long to pause between deck pulls
     DELAY_SECS = 3
 
-    def __init__(self, total_deck_pulls: int = 100, spike_record: bool = False):
+    def __init__(self, total_deck_pulls: int = 100, spike_record: bool = False, seed: Optional[int] = None):
 
         self.spike_record = spike_record
         self.total_deck_pulls = total_deck_pulls
@@ -139,17 +141,21 @@ class IowaMainWindow(QtWidgets.QMainWindow, Ui_main_window):
 
         # Define the deck behaviour
         deck1 = Deck.make_finite_deck(win_amounts=100,
-                               loss_amounts=[0, 150, 200, 250, 300, 350],
-                               loss_weights=[50, 10, 10, 10, 10, 10])
+                                      loss_amounts=[0, 150, 200, 250, 300, 350],
+                                      loss_weights=[5, 1, 1, 1, 1, 1],
+                                      seed=seed)
         deck2 = Deck.make_finite_deck(win_amounts=100,
-                               loss_amounts=[0, 1250],
-                               loss_weights=[90, 10])
+                                      loss_amounts=[0, 1250],
+                                      loss_weights=[9, 1],
+                                      seed=seed+1)
         deck3 = Deck.make_finite_deck(win_amounts=50,
-                               loss_amounts=[0, 25, 50, 75],
-                               loss_weights=[40, 30, 20, 10])
+                                      loss_amounts=[0, 25, 50, 75],
+                                      loss_weights=[4, 3, 2, 1],
+                                      seed=seed+2)
         deck4 = Deck.make_finite_deck(win_amounts=50,
-                               loss_amounts=[0, 250],
-                               loss_weights=[90, 10])
+                                      loss_amounts=[0, 250],
+                                      loss_weights=[9, 1],
+                                      seed=seed+3)
 
         # Assign each deck to a button
         self.decks = {self.deck_button1: deck1,
@@ -346,6 +352,9 @@ def main():
                         help='Launch Backyard Brains Spike Recorder in background. Default is do not run.')
     parser.add_argument('--total-deck-pulls', type=int, default=100,
                         help='The total number of deck pulls in the experiment. Default is 100.')
+    parser.add_argument('--seed', type=int, default=0,
+                        help='Seed for the random number generators that control deck randomness. '
+                             'Default is 0 so behaviour between runs will be random but fixed')
 
     args = parser.parse_args()
 
