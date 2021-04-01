@@ -48,13 +48,15 @@ iowa
 There are some available options and arguments:
 
 ```
-usage: iowa [-h] [--spike-record] [--total-deck-pulls TOTAL_DECK_PULLS]
+usage: iowa [-h] [--spike-record] [--total-deck-pulls TOTAL_DECK_PULLS] [--seed SEED]
 
 optional arguments:
   -h, --help            show this help message and exit
   --spike-record        Launch Backyard Brains Spike Recorder in background. Default is do not run.
   --total-deck-pulls TOTAL_DECK_PULLS
                         The total number of deck pulls in the experiment. Default is 100.
+  --seed SEED           Seed for the random number generators that control deck randomness. 
+                        Default is 0 so behaviour between runs will be random but fixed
 
 
 ```
